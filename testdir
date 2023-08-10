@@ -1,0 +1,13 @@
+#!/bin/bash
+
+mkdir /tmp/testdir
+
+for f in $(ls -A $HOME);
+do
+    if [ -f $HOME/$f ]; then
+        cp $HOME/$f /tmp/testdir
+    fi
+done
+
+mkdir /tmp/testdir/dotfiles
+cp $HOME/dotfiles/.dotyrc /tmp/testdir/dotfiles
