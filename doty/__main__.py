@@ -1,12 +1,12 @@
 import os
 import shutil
 from configparser import ConfigParser, ExtendedInterpolation
-from helpers import create_dot_dir
+from classes import Doty
 
-HOME='/tmp/testdir'
-DOTFILES=os.path.join(HOME, "dotfiles")
-CONFIG=os.path.join(DOTFILES, ".dotyrc")
-dotycfg = ConfigParser(allow_no_value=True, interpolation=ExtendedInterpolation())
+# HOME='/tmp/testdir'
+# DOTFILES=os.path.join(HOME, "dotfiles")
+# CONFIG=os.path.join(DOTFILES, ".dotyrc")
+# dotycfg = ConfigParser(allow_no_value=True, interpolation=ExtendedInterpolation())
 
 def create_symlink(src: str, dst: str):
     # if os.stat(src).st_size == 0:
@@ -32,20 +32,24 @@ def add_files(files: list, dir_name: str):
         
         create_symlink(dot_path, home_path)
 
-def main():
+# def main():
     
-    # TODO: Write some logic in case no config exists
-    dotycfg.read(CONFIG)
-    dir_files = [(fs[0], fs[1].strip().split('\n')) for fs in dotycfg.items('files')]
+#     # TODO: Write some logic in case no config exists
+#     dotycfg.read(CONFIG)
+#     dir_files = [(fs[0], fs[1].strip().split('\n')) for fs in dotycfg.items('files')]
     
-    for df in dir_files:
-        name, files = df
-        dot_dir = os.path.join(DOTFILES, name)
+#     for df in dir_files:
+#         name, files = df
+#         dot_dir = os.path.join(DOTFILES, name)
 
-        if not os.path.isdir(dot_dir):
-            os.mkdir(dot_dir)
+#         if not os.path.isdir(dot_dir):
+#             os.mkdir(dot_dir)
         
-        add_files(files, dot_dir)
+#         add_files(files, dot_dir)
+
+def main():
+    doty = Doty()
+    doty.update()
     
 
 if __name__ == "__main__":

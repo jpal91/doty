@@ -1,13 +1,17 @@
 #!/bin/bash
 
-mkdir /tmp/testdir
+if [ -d /tmp/dotytest ]; then
+    rm -rf /tmp/dotytest
+fi
+
+mkdir /tmp/dotytest
 
 for f in $(ls -A $HOME);
 do
     if [ -f $HOME/$f ]; then
-        cp $HOME/$f /tmp/testdir
+        cp $HOME/$f /tmp/dotytest
     fi
 done
 
-mkdir /tmp/testdir/dotfiles
-cp $HOME/dotfiles/.dotyrc /tmp/testdir/dotfiles
+mkdir /tmp/dotytest/dotfiles
+cp $HOME/dotfiles/.dotyrc /tmp/dotytest/dotfiles

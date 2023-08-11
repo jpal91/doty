@@ -3,6 +3,8 @@ from datetime import datetime
 from configparser import ConfigParser
 
 class DotyProfile:
+    """Class for managing the .doty_profile file"""
+    
     base_cfg = {
         'meta': {
             'name': '',
@@ -30,6 +32,10 @@ class DotyProfile:
 
         with open(self.dp_path, 'w') as f:
             self.cfg.write(f)
+    
+    def add_links(self, links: list) -> None:
+        for link in links:
+            self.cfg['links'][link] = ''
 
 
 # if __name__ == "__main__":
