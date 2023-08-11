@@ -1,6 +1,7 @@
 import os
 import shutil
 from configparser import ConfigParser, ExtendedInterpolation
+from helpers import create_dot_dir
 
 HOME='/tmp/testdir'
 DOTFILES=os.path.join(HOME, "dotfiles")
