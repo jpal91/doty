@@ -49,7 +49,8 @@ def add_files(files: list, dir_name: str):
 
 def main():
     doty = Doty()
-    doty.update()
+    # doty.check_valid()
+    # doty.write_cfg()
     
 
 if __name__ == "__main__":

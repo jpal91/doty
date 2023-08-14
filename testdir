@@ -14,5 +14,6 @@ do
 done
 
 mkdir /tmp/dotytest/dotfiles
-cp $HOME/dotfiles/.dotyrc /tmp/dotytest/dotfiles
+# cp $HOME/dotfiles/.dotyrc /tmp/dotytest/dotfiles
+cp $HOME/dev/doty/.dotyrc /tmp/dotytest/dotfiles
 cp $HOME/.ssh /tmp/dotytest -r

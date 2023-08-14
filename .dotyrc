@@ -1,0 +1,23 @@
+[meta]
+; home = /home/jpal
+df = ${home}/dotfiles
+
+[dotfiles]
+.condarc
+${df}/.dotyrc
+
+[bash]
+.bashrc
+.bash_profile
+.bash_aliases
+
+[bash/functions]
+.bash_functions
+
+[zsh]
+.zshrc
+.zshenv
+.zsh_aliases
+
+[ssh]
+.ssh
