@@ -1,0 +1,10 @@
+- name: .bashrc
+  src: /tmp/dotytest/.bashrc
+  dst: /tmp/dotytest/dotfiles/.bashrc
+  notes: ''
+  hash: 298c00f67c2e8a01c0be39880c1bb0e3
+- name: .zshrc
+  src: /tmp/dotytest/.zshrc
+  dst: /tmp/dotytest/dotfiles/.zshrc
+  notes: ''
+  hash: ba9dcd7051fa837248b88bd372b50875

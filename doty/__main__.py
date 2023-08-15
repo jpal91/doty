@@ -49,7 +49,6 @@ def add_files(files: list, dir_name: str):
 
 def main():
     doty = Doty()
-    print(doty.cfg_changed)
     doty.write_cfg()
     
 

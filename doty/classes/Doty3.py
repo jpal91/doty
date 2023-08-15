@@ -1,7 +1,9 @@
 import os
+import shutil
 import hashlib
 import json
 import yaml
+from helpers.hash import get_md5
 
 # IDEA: Maybe use a class to represent the config file
 # IDEA: Maybe use a class to represent each file - home path, dot path, link, etc.
@@ -48,16 +50,18 @@ class DotyEntry:
             'notes': self.notes,
         }
     
-    def hashable(self) -> dict:
-        if not self.is_broken_entry():
-            return {
-                'name': self.name,
-                'src': self.src,
-                'dst': self.dst,
-            }
+    def lock_entry(self) -> dict:
+        if not self.entry_complete():
+            return None
         
-        return None
-    
+        return {
+            'name': self.name,
+            'src': self.src,
+            'dst': self.dst,
+            'notes': self.notes,
+            'hash': get_md5({ 'name': self.name, 'src': self.src, 'dst': self.dst })
+        }
+        
     def run_checks(self) -> None:
         self.parse_entry()
         self.check_link()
@@ -106,6 +110,24 @@ class DotyEntry:
         
         return self._correct_location
     
+    def fix_location(self) -> bool:
+        attempted = False
+
+        while True:
+            try:
+                shutil.move(self.src, self.dst)
+            except FileNotFoundError:
+                if attempted:
+                    return False
+                os.makedirs(os.path.dirname(self.dst))
+                attempted = True
+            else:
+                return self.check_location()
+    
+    def fix_link(self) -> bool:
+        os.symlink(self.dst, self.src)
+        return self.check_link()
+    
     def fix(self) -> bool:
         if self.entry_complete():
             return True
@@ -113,6 +135,13 @@ class DotyEntry:
         if self.is_broken_entry():
             return False
         
+        if not self.is_correct_location() and not self.fix_location():
+            return False
+        
+        if not self.is_valid_link() and not self.fix_link():
+            return False
+        
+        return True
 
 
 class DotyEntries:
@@ -143,17 +172,22 @@ class DotyEntries:
         return [ e.vals() for e in self.entries ]
     
     def get_hashable_entries(self) -> list:
-        return [ e.hashable() for e in self.entries ]
+        return [ e.lock_entry() for e in self.entries ]
     
-    def get_cfg_hash(self) -> str:
-        return hashlib.md5(json.dumps(self.get_hashable_entries(), sort_keys=True).encode()).hexdigest()
+    def fix_all(self) -> bool:
+        [ e.fix() for e in self.entries ]
+        return True
+    
+    # def get_cfg_hash(self) -> str:
+    #     return hashlib.md5(json.dumps(self.get_hashable_entries(), sort_keys=True).encode()).hexdigest()
 
 class Doty:
 
     def __init__(self) -> None:
         # self.cfg = self.load_cfg()
         self.cfg = DotyEntries(self.load_cfg())
-        self.cfg_changed = self.check_cfg_changes()
+        self.cfg.fix_all()
+        # self.cfg_changed = self.check_cfg_changes()
     
     def load_cfg(self):
         with open(os.path.join(DOTDIR, "dotycfg.yml")) as f:
@@ -161,7 +195,7 @@ class Doty:
 
     @property
     def cfg_hash(self):
-        return self.cfg.get_cfg_hash()
+        return self.cfg.get_hashable_entries()
     
     @property
     def cfg_entries(self):
@@ -181,5 +215,5 @@ class Doty:
         with open(os.path.join(DPATH, "dotycfg.yml"), 'w') as f:
             yaml.safe_dump(self.cfg_entries, f, sort_keys=False)
 
-        with open(os.path.join(DPATH, "doty.lock"), 'w') as f:
-            f.write(self.cfg_hash)
+        with open(os.path.join(DPATH, "doty_lock.yml"), 'w') as f:
+            yaml.safe_dump(self.cfg_hash, f, sort_keys=False)
