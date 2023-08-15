@@ -1,0 +1,8 @@
+- name: .zshrc
+  src: /tmp/dotytest/.zshrc
+  dst: /tmp/dotytest/dotfiles/.zshrc
+  notes: ''
+- name: .bashrc
+  src: /tmp/dotytest/.bashrc
+  dst: /tmp/dotytest/dotfiles/.bashrc
+  notes: ''
