@@ -6,7 +6,3 @@
   src: /tmp/dotytest/.zshrc
   dst: /tmp/dotytest/dotfiles/.zshrc
   notes: ''
-- name: .something
-  src: /tmp/dotytest/bash/.something
-  dst: ''
-  notes: ''

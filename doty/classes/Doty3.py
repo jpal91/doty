@@ -9,7 +9,7 @@ import yaml
 HOME = '/tmp/dotytest' # os.environ['HOME']
 DOTDIR = os.path.join(HOME, "dotfiles") # os.environ['DOTDIR']
 
-if os.environ['CODESPACES']:
+if 'CODESPACES' in os.environ:
     DPATH = '/workspaces/doty'
 else:
     DPATH = '/home/jpal/dev/doty'
@@ -23,15 +23,22 @@ class DotyEntry:
         self.notes = ''
         self._broken_entry = False
         self._valid_link = False
+        self._correct_location = False
 
         self.__dict__.update(attribs)
-        self.complete_entry(attribs)
+        self.run_checks()
     
     def is_broken_entry(self) -> bool:
         return self._broken_entry
     
     def is_valid_link(self) -> bool:
         return self._valid_link
+    
+    def is_correct_location(self) -> bool:
+        return self._correct_location
+    
+    def entry_complete(self) -> bool:
+        return all([not self._broken_entry, self._valid_link, self._correct_location])
 
     def vals(self) -> dict:
         return {
@@ -50,9 +57,14 @@ class DotyEntry:
             }
         
         return None
+    
+    def run_checks(self) -> None:
+        self.parse_entry()
+        self.check_link()
+        self.check_location()
 
-    def complete_entry(self, entry: dict) -> None:
-        entry = { k.lower(): v for k, v in entry.items() }
+    def parse_entry(self) -> None:
+        entry = { k.lower(): v for k, v in self.__dict__.items() }
 
         if not 'name' in entry:
             self._broken_entry = True
@@ -60,9 +72,9 @@ class DotyEntry:
 
         self.name = os.path.basename(entry['name'])
 
-        if 'src' in entry and not os.path.isabs(entry['src']):
+        if entry['src'] and not os.path.isabs(entry['src']):
             self.src = os.path.join(HOME, entry['src'])
-        elif not 'src' in entry:
+        elif not entry['src']:
             self.src = os.path.join(HOME, entry['name'])
 
         if not os.path.exists(self.src):
@@ -70,12 +82,12 @@ class DotyEntry:
             self._broken_entry = True
             return
 
-        if 'dst' in entry and not os.path.isabs(entry['dst']):
+        if entry['dst'] and not os.path.isabs(entry['dst']):
             self.dst = os.path.join(DOTDIR, entry['dst'])
-        elif not 'dst' in entry:
+        elif not entry['dst']:
             self.dst = os.path.join(DOTDIR, entry['name'])
         
-        if not 'notes' in entry:
+        if not entry['notes']:
             self.notes = ''
     
     def check_link(self) -> bool:
@@ -85,6 +97,21 @@ class DotyEntry:
             self._valid_link = True
         
         return self._valid_link
+    
+    def check_location(self) -> bool:
+        if not os.path.isfile(self.dst):
+            self._correct_location = False
+        else:
+            self._correct_location = True
+        
+        return self._correct_location
+    
+    def fix(self) -> bool:
+        if self.entry_complete():
+            return True
+        
+        if self.is_broken_entry():
+            return False
         
 
 
