@@ -1,2 +1,3 @@
-from .Doty3 import Doty, DotyEntries
+from .DotyEntry import DotyEntry
+from .DotyEntries import DotyEntries
 # from .DotyProfile import DotyProfile
