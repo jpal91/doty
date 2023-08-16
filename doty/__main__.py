@@ -1,9 +1,12 @@
 import os
 import yaml
+from dotenv import load_dotenv
+load_dotenv()
 from classes import DotyEntries
 
-HOME = '/tmp/dotytest' # os.environ['HOME']
-DOTDIR = os.path.join(HOME, "dotfiles") # os.environ['DOTDIR']
+
+HOME = os.environ['DOTHOME']
+DOTDIR = os.environ['DOTDIR']
 
 if 'CODESPACES' in os.environ:
     DPATH = '/workspaces/doty'

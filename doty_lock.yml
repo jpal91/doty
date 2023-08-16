@@ -3,6 +3,11 @@
   dst: /tmp/dotytest/dotfiles/.zshrc
   notes: ''
   hash: ba9dcd7051fa837248b88bd372b50875
+- name: .zsh_history
+  src: /tmp/dotytest/.zsh_history
+  dst: /tmp/dotytest/dotfiles/.zsh_history
+  notes: ''
+  hash: 9ff54b519861ef53be7606f13999338f
 - name: .bashrc
   src: /tmp/dotytest/.bashrc
   dst: /tmp/dotytest/dotfiles/.bashrc

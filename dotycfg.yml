@@ -7,6 +7,6 @@
   dst: /tmp/dotytest/dotfiles/.zshrc
   notes: ''
 - name: .zsh_history
-  src: /tmp/dotytest/nothing/.zsh_history
+  src: /tmp/dotytest/.zsh_history
   dst: /tmp/dotytest/dotfiles/.zsh_history
   notes: ''

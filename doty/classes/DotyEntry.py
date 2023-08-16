@@ -5,8 +5,8 @@ from helpers.hash import get_md5
 # IDEA: Maybe use a class to represent the config file
 # IDEA: Maybe use a class to represent each file - home path, dot path, link, etc.
 
-HOME = '/tmp/dotytest' # os.environ['HOME']
-DOTDIR = os.path.join(HOME, "dotfiles") # os.environ['DOTDIR']
+HOME = os.environ['DOTHOME']
+DOTDIR = os.environ['DOTDIR']
 
 class DotyEntry:
 
