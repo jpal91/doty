@@ -16,10 +16,10 @@ done
 mkdir /tmp/dotytest/dotfiles
 # cp $HOME/dotfiles/.dotyrc /tmp/dotytest/dotfiles
 if [ -z "$CODESPACES" ]; then
-    cp $HOME/dev/doty/dotycfg.yml /tmp/dotytest/dotfiles
-    cp $HOME/dev/doty/doty.lock /tmp/dotytest/dotfiles
+    ln -s $HOME/dev/doty/dotycfg.yml /tmp/dotytest/dotfiles/dotycfg.yml
+    ln -s $HOME/dev/doty/doty_lock.yml /tmp/dotytest/dotfiles/doty_lock.yml
     cp $HOME/.ssh /tmp/dotytest -r
 else
     cp /workspaces/doty/dotycfg.yml /tmp/dotytest/dotfiles
-    cp /workspaces/doty/doty.lock /tmp/dotytest/dotfiles
+    cp /workspaces/doty/doty_lock.yml /tmp/dotytest/dotfiles
 fi

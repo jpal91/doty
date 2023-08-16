@@ -1,8 +1,12 @@
 - name: .bashrc
   src: /tmp/dotytest/.bashrc
-  dst: /tmp/dotytest/dotfiles/.bashrc
+  dst: /tmp/dotytest/dotfiles/bash/.bashrc
   notes: ''
 - name: .zshrc
   src: /tmp/dotytest/.zshrc
   dst: /tmp/dotytest/dotfiles/.zshrc
+  notes: ''
+- name: .zsh_history
+  src: /tmp/dotytest/.zsh_history
+  dst: /tmp/dotytest/dotfiles/.zsh_history
   notes: ''

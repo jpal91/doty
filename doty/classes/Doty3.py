@@ -29,6 +29,7 @@ class DotyEntry:
 
         self.__dict__.update(attribs)
         self.run_checks()
+
     
     def is_broken_entry(self) -> bool:
         return self._broken_entry
@@ -50,6 +51,9 @@ class DotyEntry:
             'notes': self.notes,
         }
     
+    def get_hash(self) -> str:
+        return get_md5({ 'name': self.name, 'src': self.src, 'dst': self.dst })
+    
     def lock_entry(self) -> dict:
         if not self.entry_complete():
             return None
@@ -59,7 +63,7 @@ class DotyEntry:
             'src': self.src,
             'dst': self.dst,
             'notes': self.notes,
-            'hash': get_md5({ 'name': self.name, 'src': self.src, 'dst': self.dst })
+            'hash': self.get_hash()
         }
         
     def run_checks(self) -> None:
@@ -172,7 +176,10 @@ class DotyEntries:
         return [ e.vals() for e in self.entries ]
     
     def get_hashable_entries(self) -> list:
-        return [ e.lock_entry() for e in self.entries ]
+        return [ e.lock_entry() for e in self.entries if e.entry_complete() ]
+    
+    def get_unlocked_hashes(self) -> dict:
+        return { e.name: e.get_hash() for e in self.entries }
     
     def fix_all(self) -> bool:
         [ e.fix() for e in self.entries ]

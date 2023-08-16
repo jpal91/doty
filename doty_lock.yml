@@ -1,10 +1,15 @@
 - name: .bashrc
   src: /tmp/dotytest/.bashrc
-  dst: /tmp/dotytest/dotfiles/.bashrc
+  dst: /tmp/dotytest/dotfiles/bash/.bashrc
   notes: ''
-  hash: 298c00f67c2e8a01c0be39880c1bb0e3
+  hash: afd7a6adb38143b3eeca05287f5fdda5
 - name: .zshrc
   src: /tmp/dotytest/.zshrc
   dst: /tmp/dotytest/dotfiles/.zshrc
   notes: ''
   hash: ba9dcd7051fa837248b88bd372b50875
+- name: .zsh_history
+  src: /tmp/dotytest/.zsh_history
+  dst: /tmp/dotytest/dotfiles/.zsh_history
+  notes: ''
+  hash: 9ff54b519861ef53be7606f13999338f
