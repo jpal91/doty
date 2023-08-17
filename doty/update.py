@@ -41,6 +41,10 @@ def main():
     with open(os.path.join(DOTDIR, 'doty_lock.yml')) as f:
         lock_yml = yaml.safe_load(f)
     
+    if not cfg_yml and not lock_yml:
+        print('dotycfg.yml is empty, please add entries to it')
+        return
+    
     cfg = DotyEntries(cfg_yml)
     lock = DotyEntries(lock_yml)
 
