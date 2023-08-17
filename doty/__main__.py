@@ -1,24 +1,7 @@
 import os
 from argparse import ArgumentParser
-from dotenv import load_dotenv
-load_dotenv()
-# from update import main as update
 
-DOTDIR = os.environ['DOTY_DIR']
-
-def dot_exists() -> bool:
-    if not DOTDIR:
-        return False
-    
-    if not os.path.exists(DOTDIR):
-        return False
-    
-    lock, cfg = os.path.join(DOTDIR, 'doty_lock.yml'), os.path.join(DOTDIR, 'dotycfg.yml')
-
-    if not os.path.exists(lock) or not os.path.exists(cfg):
-        return False
-    
-    return True
+env_path = os.path.join(os.environ['HOME'], '.config', 'doty', 'dotyrc')
 
 if __name__ == "__main__":
     parser = ArgumentParser()
@@ -33,10 +16,18 @@ if __name__ == "__main__":
         exit(0)
     
     if args.command == 'init':
-        pass
+        from init import main as init
+        init(True)
+        exit(0)
 
-    if not dot_exists():
-        print('Doty is not properly configured, please use doty init to set up')
+    if not os.path.isfile(env_path):
+        print("Doty environment file not found - please use 'doty init' to create it")
         exit(1)
+    
+    from dotenv import load_dotenv
+    load_dotenv(env_path)
 
-    # update()
+    if args.command in ['update', 'up']:
+        from update import main as update
+        update()
+        exit(0)
