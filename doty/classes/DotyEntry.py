@@ -6,7 +6,7 @@ from helpers.hash import get_md5
 # IDEA: Maybe use a class to represent each file - home path, dot path, link, etc.
 
 HOME = os.environ['DOTHOME']
-DOTDIR = os.environ['DOTDIR']
+DOTDIR = os.environ['DOTY_DIR']
 
 class DotyEntry:
 
