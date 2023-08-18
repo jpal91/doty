@@ -22,6 +22,10 @@ if __name__ == "__main__":
     parser_status.add_argument('-c', help='See the results from the doty config file instead of the lock file', action='store_const', const=1, dest='list_lvl')
     parser_status.add_argument('-A', help='See results from both the doty config and lock files', action='store_const', const=2, dest='list_lvl')
     parser_status.add_argument('-b', help='Show broken entries from config file', action='store_const', const=3, dest='list_lvl')
+
+    parser_create = subparser.add_parser('create', help='Create a new doty entry', aliases=['c'])
+    parser_create.add_argument('-C', help='Add confirmations to the create process', action='store_true', dest='check', default=False)
+    parser_create.add_argument('-f', help='No confirmations will be given', action='store_true', dest='force', default=False)
     
     args = parser.parse_args()
 
@@ -52,5 +56,10 @@ if __name__ == "__main__":
     if args.command in ['status', 'st']:
         from status import main as status
         status(args)
+        exit(0)
+    
+    if args.command in ['create', 'c']:
+        from create import main as create
+        create(args.check, args.force)
         exit(0)
     
