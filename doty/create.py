@@ -23,7 +23,7 @@ def check_dst(dst: str) -> str:
     return ''
 
 def find_file(name: str) -> str:
-    if HOME not in name:
+    if not os.path.isabs(name):
         path = os.path.join(HOME, name)
     else:
         path = name
