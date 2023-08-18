@@ -8,6 +8,9 @@ class DotyEntries:
     def check_valid(self, entries: list) -> list[DotyEntry]:
         new_cfg = []
 
+        if not entries:
+            return new_cfg
+
         for item in entries:
             if isinstance(item, str):
                 updated_item = DotyEntry({ 'name': item })
@@ -37,6 +40,7 @@ class DotyEntries:
     def add_entry(self, entry: DotyEntry) -> None:
         if not isinstance(entry, DotyEntry):
             raise TypeError('Entry must be a DotyEntry object')
+        entry.run_checks()
         self.entries.append(entry)
     
     def remove_entry(self, entry: DotyEntry) -> None:

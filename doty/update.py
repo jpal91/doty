@@ -57,12 +57,12 @@ def main():
     for a in add:
         print(f'Adding {a.name} to lock')
         lock.add_entry(a)
-    
+
     for u in update:
         print(f'Updating {u[0].name} in lock')
         lock.remove_entry(u[0])
         lock.add_entry(u[1])
-    
+
     lock.fix_all()
 
     with open(os.path.join(DPATH, "dotycfg.yml"), 'w') as f:

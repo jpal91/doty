@@ -1,12 +1,15 @@
 - name: .bashrc
   src: /tmp/dotytest/.bashrc
   dst: /tmp/dotytest/dotfiles/.bashrc
-  notes: hello world
+  notes: ''
+  linked: true
 - name: .zshrc
   src: /tmp/dotytest/.zshrc
   dst: /tmp/dotytest/dotfiles/.zshrc
   notes: ''
+  linked: true
 - name: .zsh_history
   src: /tmp/dotytest/.zsh_history
   dst: /tmp/dotytest/dotfiles/.zsh_history
   notes: ''
+  linked: true

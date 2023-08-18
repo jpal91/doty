@@ -16,13 +16,14 @@ class DotyEntry:
         self.dst = ''
         self.notes = ''
         self.hash = ''
+        self.linked = True
         self._locked_entry = False
         self._broken_entry = False
         self._valid_link = False
         self._correct_location = False
 
         self.__dict__.update(attribs)
-        
+
         if self.hash:
             self._locked_entry = True
         
@@ -44,7 +45,7 @@ class DotyEntry:
         return self._locked_entry
     
     def entry_complete(self) -> bool:
-        return all([not self._broken_entry, self._valid_link, self._correct_location])
+        return all([not self.is_broken_entry(), self.is_valid_link(), self.is_correct_location()])
 
     def vals(self) -> dict:
         return {
@@ -52,10 +53,11 @@ class DotyEntry:
             'src': self.src,
             'dst': self.dst,
             'notes': self.notes,
+            'linked': self.linked,
         }
     
     def get_hash(self) -> str:
-        return get_md5({ 'name': self.name, 'src': self.src, 'dst': self.dst })
+        return get_md5({ 'name': self.name, 'src': self.src, 'dst': self.dst, 'linked': self.linked })
     
     def lock_entry(self) -> dict:
         if not self.entry_complete():
@@ -66,6 +68,7 @@ class DotyEntry:
             'src': self.src,
             'dst': self.dst,
             'notes': self.notes,
+            'linked': self.linked,
             'hash': self.hash or self.get_hash()
         }
         
@@ -91,24 +94,30 @@ class DotyEntry:
         elif not entry['src']:
             self.src = os.path.join(HOME, entry['name'])
 
-        if not os.path.exists(self.src):
-            print(f'Invalid entry - {self.src} does not exist')
-            self._broken_entry = True
-            return
-
         if entry['dst'] and not os.path.isabs(entry['dst']):
             self.dst = os.path.join(DOTDIR, entry['dst'])
         elif not entry['dst']:
             self.dst = os.path.join(DOTDIR, entry['name'])
+
+        if not os.path.exists(self.src) and not os.path.exists(self.dst):
+            print(f'Invalid entry - {self.src} does not exist')
+            self._broken_entry = True
+            return
         
         if not entry['notes']:
             self.notes = ''
     
     def check_link(self) -> bool:
-        if not os.path.islink(self.src) or not os.readlink(self.src) == self.dst:
-            self._valid_link = False
+        if self.linked:
+            if not os.path.islink(self.src) or not os.readlink(self.src) == self.dst:
+                self._valid_link = False
+            else:
+                self._valid_link = True
         else:
-            self._valid_link = True
+            if os.path.islink(self.src) and os.readlink(self.src) == self.dst:
+                self._valid_link = False
+            else:
+                self._valid_link = True
         
         return self._valid_link
     
@@ -135,7 +144,10 @@ class DotyEntry:
                 return self.check_location()
     
     def fix_link(self) -> bool:
-        os.symlink(self.dst, self.src)
+        if self.linked:
+            os.symlink(self.dst, self.src)
+        elif os.path.islink(self.src):
+            os.unlink(self.src)
         return self.check_link()
     
     def fix(self) -> bool:
