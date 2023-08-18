@@ -1,4 +1,5 @@
 import os
+import logging
 import yaml
 from classes import DotyEntries
 
@@ -6,8 +7,10 @@ HOME = os.environ['DOTHOME']
 DOTDIR = os.environ['DOTY_DIR']
 DPATH = os.environ['DPATH']
 
+logger = logging.getLogger('doty')
+
 def compare_lock(cfg_entries: DotyEntries, lock_entries: DotyEntries) -> tuple:
-    print('Running initial checks and detecting changes...\n')
+    logger.info('\nRunning initial checks and detecting changes...\n')
 
     add, remove, update, no_change = [], [], [], 0
     entry_dict = { e.name: e for e in cfg_entries.entries if not e.is_broken_entry() }
@@ -30,11 +33,12 @@ def compare_lock(cfg_entries: DotyEntries, lock_entries: DotyEntries) -> tuple:
     add.extend(remainder)
     insert, delete, upd = len(remainder), len(remove), len(update)
 
-    print(f'Adding {insert} entries\nRemoving {delete} entries\nUpdating {upd} entries\nNo change to {no_change} entries\n')
+    logger.info(f'Adding {insert} entries\nRemoving {delete} entries\nUpdating {upd} entries\nNo change to {no_change} entries\n')
 
     return add, remove, update
 
 def main():
+
     with open(os.path.join(DOTDIR, "dotycfg.yml")) as f:
         cfg_yml = yaml.safe_load(f)
 
@@ -42,7 +46,7 @@ def main():
         lock_yml = yaml.safe_load(f)
     
     if not cfg_yml and not lock_yml:
-        print('dotycfg.yml is empty, please add entries to it')
+        logger.warning('dotycfg.yml is empty, please add entries to it')
         return
     
     cfg = DotyEntries(cfg_yml)
@@ -51,15 +55,15 @@ def main():
     add, remove, update = compare_lock(cfg, lock)
 
     for r in remove:
-        print(f'Removing {r.name} from lock')
+        logger.info(f'Removing {r.name} from lock')
         lock.remove_entry(r)
     
     for a in add:
-        print(f'Adding {a.name} to lock')
+        logger.info(f'Adding {a.name} to lock')
         lock.add_entry(a)
 
     for u in update:
-        print(f'Updating {u[0].name} in lock')
+        logger.info(f'Updating {u[0].name} in lock')
         lock.remove_entry(u[0])
         lock.add_entry(u[1])
 

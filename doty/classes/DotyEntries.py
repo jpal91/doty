@@ -1,4 +1,7 @@
+import logging
 from classes.DotyEntry import DotyEntry
+
+logger = logging.getLogger('doty')
 
 class DotyEntries:
 
@@ -17,11 +20,11 @@ class DotyEntries:
             elif isinstance(item, dict):
                 updated_item = DotyEntry(item)
             else:
-                print(f'Invalid entry - {item}')
+                logger.debug(f'Invalid entry - {item}')
                 continue
 
             if updated_item.is_broken_entry():
-                print(f'Cannot parse entry - {item}')
+                logger.debug(f'Cannot parse entry - {item}')
 
             new_cfg.append(updated_item)
         
@@ -41,6 +44,7 @@ class DotyEntries:
         if not isinstance(entry, DotyEntry):
             raise TypeError('Entry must be a DotyEntry object')
         entry.run_checks()
+        logger.debug(f'Adding Entry - {entry.__dict__}')
         self.entries.append(entry)
     
     def remove_entry(self, entry: DotyEntry) -> None:

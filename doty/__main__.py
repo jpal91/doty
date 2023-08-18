@@ -1,5 +1,10 @@
 import os
+import logging
 from argparse import ArgumentParser
+from helpers.stream_logger import init_stream_logger
+
+init_stream_logger()
+logger = logging.getLogger('doty')
 
 env_path = os.path.join(os.environ['HOME'], '.config', 'doty', 'dotyrc')
 
@@ -17,6 +22,7 @@ if __name__ == "__main__":
     parser_status.add_argument('-c', help='See the results from the doty config file instead of the lock file', action='store_const', const=1, dest='list_lvl')
     parser_status.add_argument('-A', help='See results from both the doty config and lock files', action='store_const', const=2, dest='list_lvl')
     parser_status.add_argument('-b', help='Show broken entries from config file', action='store_const', const=3, dest='list_lvl')
+    
     args = parser.parse_args()
 
     if not args.command:
@@ -29,11 +35,14 @@ if __name__ == "__main__":
         exit(0)
 
     if not os.path.isfile(env_path):
-        print("Doty environment file not found - please use 'doty init' to create it")
+        logger.error("Doty environment file not found - please use 'doty init' to create it")
         exit(1)
     
     from dotenv import load_dotenv
     load_dotenv(env_path)
+
+    from helpers.file_logger import init_file_logger
+    init_file_logger()
 
     if args.command in ['update', 'up']:
         from update import main as update

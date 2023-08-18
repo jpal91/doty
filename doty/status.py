@@ -1,4 +1,5 @@
 import os
+import logging
 import yaml
 from classes import DotyEntries
 
@@ -6,6 +7,7 @@ HOME = os.environ["DOTHOME"]
 DOTDIR = os.environ["DOTY_DIR"]
 DPATH = os.environ["DPATH"]
 
+logger = logging.getLogger('doty')
 
 def get_entries(
     yml: list, linked: range(3), name: str = "", broken: bool = False
@@ -33,6 +35,7 @@ def get_entries(
 
 
 def main(args) -> None:
+
     with open(os.path.join(DOTDIR, "dotycfg.yml")) as f:
         cfg_yml = yaml.safe_load(f)
 
@@ -40,7 +43,7 @@ def main(args) -> None:
         lock_yml = yaml.safe_load(f)
 
     if not cfg_yml and not lock_yml:
-        print("dotycfg.yml is empty, please add entries to it")
+        logger.warning("dotycfg.yml is empty, please add entries to it")
         return
 
     targets = []
@@ -70,4 +73,4 @@ def main(args) -> None:
 
         targets.extend(cfg_targets)
     
-    [print(t) for t in targets] if targets else print('No entries matched your search!')
+    [logger.info(t) for t in targets] if targets else logger.info('No entries matched your search!')

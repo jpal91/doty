@@ -1,4 +1,5 @@
 import os
+import logging
 import shutil
 from helpers.hash import get_md5
 
@@ -7,6 +8,8 @@ from helpers.hash import get_md5
 
 HOME = os.environ['DOTHOME']
 DOTDIR = os.environ['DOTY_DIR']
+
+logger = logging.getLogger('doty')
 
 class DotyEntry:
 
@@ -28,6 +31,7 @@ class DotyEntry:
             self._locked_entry = True
         
         self.run_checks()
+        logger.debug(f'New Entry - {self.__dict__}')
 
     def __eq__(self, other) -> bool:
         return self.hash == other.hash
@@ -111,7 +115,7 @@ class DotyEntry:
             self.dst = os.path.join(DOTDIR, entry['name'])
 
         if not os.path.exists(self.src) and not os.path.exists(self.dst):
-            print(f'Invalid entry - {self.src} does not exist')
+            logger.debug(f'Invalid entry - {self.src} does not exist')
             self._broken_entry = True
             self.linked = False
             return
@@ -149,6 +153,7 @@ class DotyEntry:
                 shutil.move(self.src, self.dst)
             except FileNotFoundError:
                 if attempted:
+                    logger.warning(f'Failed to move {self.name} - {self.src} -> {self.dst}')
                     return False
                 os.makedirs(os.path.dirname(self.dst))
                 attempted = True
@@ -185,4 +190,5 @@ class DotyEntry:
             os.unlink(self.src)
     
         shutil.move(self.dst, self.src)
+        logger.debug(f'Undo called on {self.name}')
         return True
