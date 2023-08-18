@@ -26,6 +26,8 @@ if __name__ == "__main__":
     parser_create = subparser.add_parser('create', help='Create a new doty entry', aliases=['c'])
     parser_create.add_argument('-C', help='Add confirmations to the create process', action='store_true', dest='check', default=False)
     parser_create.add_argument('-f', help='No confirmations will be given', action='store_true', dest='force', default=False)
+
+    parser_delete = subparser.add_parser('delete', help='Delete a doty entry', aliases=['d', 'del'])
     
     args = parser.parse_args()
 
@@ -62,4 +64,10 @@ if __name__ == "__main__":
         from create import main as create
         create(args.check, args.force)
         exit(0)
+    
+    if args.command in ['delete', 'd', 'del']:
+        from update import main as delete
+        delete(delete=True)
+        exit(0)
+    
     

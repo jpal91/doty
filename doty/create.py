@@ -85,7 +85,6 @@ def main(check: bool, force: bool) -> None:
             src = ''
         
     while not src:
-        # check_src = input('\033[1;33mPlease enter full file path, or path relative to your Home Directory: ')
         src_input = get_input('Please enter full file path, or path relative to your Home Directory: ')
         
         if not src_input:

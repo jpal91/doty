@@ -37,7 +37,46 @@ def compare_lock(cfg_entries: DotyEntries, lock_entries: DotyEntries) -> tuple:
 
     return add, remove, update
 
-def main():
+def delete_ent(locks: list, cfgs: list) -> list:
+    options = [ f'{i+1}. {c["name"]}' for i, c in enumerate(locks)]
+    str_options = "\n" + "\n".join(options)
+
+    while True:
+        try:
+            user_input = input(f'\n\033[1;36mWhich entry would you like to delete? \033[1;37m{str_options}\n\033[0;36m\n(Enter number or EXIT to cancel): \033[0m')
+        except KeyboardInterrupt:
+            print('')
+            exit(0)
+
+        if user_input == 'EXIT':
+            exit(0)
+        elif not user_input.isnumeric():
+            logger.error('\n\033[1;33mInvalid input, please enter a number')
+            continue
+        elif int(user_input) < 1 or int(user_input) > len(locks):
+            logger.error('\n\033[1;33mInvalid input, please enter a valid option')
+            continue
+        else:
+            break
+    
+    target = locks[int(user_input) - 1]['name']
+    idx = [ i for i, c in enumerate(cfgs) if c['name'] == target ][0]
+    
+    try:
+        confirm = input(f'\n\033[1;31mAre you sure you want to delete \033[1;37m{target}\033[1;31m ? (y/N): \033[0m')
+    except KeyboardInterrupt:
+        print('')
+        exit(0)
+    
+    if confirm and confirm.lower() == 'y':
+        del cfgs[idx]
+    else:
+        logger.info('\033[1;36mAborting...')
+        exit(0)
+
+    return cfgs
+
+def main(delete: bool = False):
 
     with open(os.path.join(DOTDIR, "dotycfg.yml")) as f:
         cfg_yml = yaml.safe_load(f)
@@ -48,6 +87,9 @@ def main():
     if not cfg_yml and not lock_yml:
         logger.warning('dotycfg.yml is empty, please add entries to it')
         return
+    
+    if delete:
+        cfg_yml = delete_ent(lock_yml, cfg_yml)
     
     cfg = DotyEntries(cfg_yml)
     lock = DotyEntries(lock_yml)
