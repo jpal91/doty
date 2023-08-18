@@ -14,5 +14,5 @@
   src: /tmp/dotytest/.zsh_history
   dst: /tmp/dotytest/dotfiles/.zsh_history
   notes: ''
-  linked: true
-  hash: 75409e3eaf172eaff6b22a5b9cfcaf08
+  linked: false
+  hash: 8cfb570adf45201f4fa5202a7ccc684c

@@ -12,4 +12,9 @@
   src: /tmp/dotytest/.zsh_history
   dst: /tmp/dotytest/dotfiles/.zsh_history
   notes: ''
-  linked: true
+  linked: false
+- name: something.txt
+  src: /tmp/dotytest/something.txt
+  dst: /tmp/dotytest/dotfiles/something.txt
+  notes: ''
+  linked: false

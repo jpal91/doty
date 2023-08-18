@@ -32,6 +32,17 @@ class DotyEntry:
     def __eq__(self, other) -> bool:
         return self.hash == other.hash
     
+    def __str__(self) -> str:
+        return f"""\
+        
+        Name: {self.name}
+        Source Location: {self.src}
+        Destination: {self.dst}
+        Notes: {self.notes}
+        Linked to Home: {self.linked}
+        Hash: {self.hash}
+        """
+    
     def is_broken_entry(self) -> bool:
         return self._broken_entry
     
@@ -102,6 +113,7 @@ class DotyEntry:
         if not os.path.exists(self.src) and not os.path.exists(self.dst):
             print(f'Invalid entry - {self.src} does not exist')
             self._broken_entry = True
+            self.linked = False
             return
         
         if not entry['notes']:
