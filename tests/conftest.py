@@ -1,4 +1,5 @@
 import pytest
+from dotenv import load_dotenv
 
 def create_dummy_home_files(home_dir):
     (home_dir / '.bashrc').touch()
@@ -41,3 +42,6 @@ def temp_dir(tmp_path_factory):
 
     return home_dir
 
+@pytest.fixture(autouse=True, scope='session')
+def load_env(temp_dir):
+    load_dotenv(temp_dir / '.config' / 'doty' / 'dotyrc')

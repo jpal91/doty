@@ -30,7 +30,7 @@ def test_multi_good_entry(temp_dir):
     entries = [
         { 'name': '.bashrc', 'linked': False },
         { 'name': '.zshrc', 'src': str(temp_dir / '.zshrc'), 'notes': 'zshrc file' },
-        { 'name': '.zsh_history', 'dst': str(temp_dir / '.zsh_history'), 'notes': 'zsh history file', 'linked': False },
+        { 'name': '.zsh_history', 'dst': str(temp_dir / 'dotfiles' / '.zsh_history'), 'notes': 'zsh history file', 'linked': False },
     ]
 
     for i, entry in enumerate(entries):
@@ -126,7 +126,7 @@ def test_undo(good_entry_fixed):
     assert good_entry_fixed.entry_complete() == True
 
     good_entry_fixed._locked_entry = True
-    good_entry_fixed.undo()
+    assert good_entry_fixed.undo() == True
     good_entry_fixed.run_checks()
 
     assert good_entry_fixed.entry_complete() == False

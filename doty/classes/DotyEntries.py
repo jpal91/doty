@@ -41,15 +41,11 @@ class DotyEntries:
         return True
     
     def add_entry(self, entry: DotyEntry) -> None:
-        if not isinstance(entry, DotyEntry):
-            raise TypeError('Entry must be a DotyEntry object')
         entry.run_checks()
         logger.debug(f'Adding Entry - {entry.__dict__}')
         self.entries.append(entry)
     
     def remove_entry(self, entry: DotyEntry) -> None:
-        if not isinstance(entry, DotyEntry):
-            raise TypeError('Entry must be a DotyEntry object')
         entry.undo()
         self.entries.remove(entry)
     
