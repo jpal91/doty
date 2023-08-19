@@ -10,7 +10,11 @@ DPATH = os.environ['DPATH']
 logger = logging.getLogger('doty')
 
 def double_check(type: str, entry: str) -> bool:
-    check = input(f"\033[1;33mPlease confirm {type} - \033[1;37m{entry}\033[0m \033[1;33m? (Y/n): \033[0m")
+    try:
+        check = input(f"\033[1;33mPlease confirm {type} - \033[1;37m{entry}\033[0m \033[1;33m? (Y/n): \033[0m")
+    except KeyboardInterrupt:
+        print('')
+        exit(0)
 
     if not check or check.lower() == 'y':
         return True
@@ -55,7 +59,7 @@ def main(check: bool, force: bool) -> None:
     
     if not cfg_yml and not lock_yml:
         logger.warning('dotycfg.yml is empty, please add entries to it')
-        return
+        exit(1)
     
     logger.info('\n\033[1;33mCreating new Doty Entry...')
     logger.info('\033[1;37mTo quit at any time, enter EXIT or press Ctrl + C\n')
@@ -69,7 +73,7 @@ def main(check: bool, force: bool) -> None:
             logger.error('\033[1;31mName cannot be empty\n')
         elif name in current_names:
             logger.error('\033[1;31mFile name currently in configuration - please edit with doty update -e <NAME>')
-            return
+            exit(1)
         elif check and not double_check('name', name):
             name = ''
         else:
