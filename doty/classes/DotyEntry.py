@@ -132,7 +132,7 @@ class DotyEntry:
         else:
             if os.path.islink(self.src) and os.readlink(self.src) == self.dst:
                 self._valid_link = False
-            else:
+            elif not self.is_broken_entry():
                 self._valid_link = True
         
         return self._valid_link

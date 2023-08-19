@@ -20,6 +20,6 @@ def test_dot_dir(temp_dir):
 def test_env_file(temp_dir):
     env = dotenv_values(temp_dir / '.config' / 'doty' / 'dotyrc')
     assert env['DOTHOME'] == str(temp_dir)
-    assert env['DOTDIR'] == str(temp_dir / 'dotfiles')
+    assert env['DOTY_DIR'] == str(temp_dir / 'dotfiles')
     assert env['DPATH'] == str(temp_dir / 'dotfiles')
     assert env['DOTY_LOG_PATH'] == str(temp_dir / 'dotfiles' / 'logs' / 'doty.log')

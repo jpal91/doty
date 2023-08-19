@@ -8,6 +8,7 @@ def create_dummy_home_files(home_dir):
 def create_dummy_doty_files(doty_dir):
     (doty_dir / 'dotycfg.yml').touch()
     (doty_dir / 'doty_lock.yml').touch()
+    (doty_dir / 'logs' / 'doty.log').touch()
 
 def create_dotyrc(home, doty, cfg, logs):
     dotyrc = cfg / 'dotyrc'
@@ -15,7 +16,7 @@ def create_dotyrc(home, doty, cfg, logs):
 
     envs = [
         f'DOTHOME="{home}"',
-        f'DOTDIR="{doty}"',
+        f'DOTY_DIR="{doty}"',
         f'DPATH="{doty}"',
         f'DOTY_LOG_PATH="{logs}/doty.log"',
     ]
