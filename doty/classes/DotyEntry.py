@@ -98,7 +98,7 @@ class DotyEntry:
     def parse_entry(self) -> None:
         entry = { k.lower(): v for k, v in self.__dict__.items() }
 
-        if not 'name' in entry:
+        if not entry['name']:
             self._broken_entry = True
             return
 
