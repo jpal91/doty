@@ -54,22 +54,6 @@ def test_name_already_exists(setup, monkeypatch, create):
     assert e.type == SystemExit
     assert e.value.code == 1
 
-# def test_empty_name_str(setup, monkeypatch, create, capfd):
-#     # Sends empty string as the first input response, captures standard err, and then sends a sysexit
-
-#     try:
-#         responses = iter(['', ''])
-#         monkeypatch.setattr('builtins.input', lambda _: next(responses, 'EXIT'))
-#         create(False, False)
-#         captured = capfd.readouterr()
-#         print(captured.err)
-#         assert captured.err == '\x1b[1;31mError: \x1b[0mName cannot be empt\n'
-#     except SystemExit as e:
-#         pass
-    
-#     captured = capfd.readouterr()
-#     print(captured.err)
-
 def test_create_new_entry(setup, temp_dir, monkeypatch, create):
     (temp_dir / '.good_entry1').touch()
     inp = iter(['.good_entry1', '', '', '', '', '', ''])
