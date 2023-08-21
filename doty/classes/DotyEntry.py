@@ -113,9 +113,15 @@ class DotyEntry:
             self.dst = os.path.join(DOTDIR, entry['dst'])
         elif not entry['dst']:
             self.dst = os.path.join(DOTDIR, entry['name'])
+        
+        if not self.dst.startswith(DOTDIR):
+            logger.error(f'\033[1;31mInvalid entry - Destination\033[0m {self.dst} is not in {DOTDIR}')
+            self._broken_entry = True
+            self.linked = False
+            return
 
         if not os.path.exists(self.src) and not os.path.exists(self.dst):
-            logger.debug(f'Invalid entry - {self.src} does not exist')
+            logger.error(f'\033[1;31mInvalid entry\033[0m - {self.src} does not exist')
             self._broken_entry = True
             self.linked = False
             return
@@ -150,7 +156,7 @@ class DotyEntry:
 
         while True:
             try:
-                shutil.move(self.src, self.dst)
+                self.dst = shutil.move(self.src, self.dst)
             except FileNotFoundError:
                 if attempted:
                     logger.warning(f'Failed to move {self.name} - {self.src} -> {self.dst}')
@@ -169,15 +175,19 @@ class DotyEntry:
     
     def fix(self) -> bool:
         if self.entry_complete():
+            logger.debug(f'Entry complete - {self.name}')
             return True
         
         if self.is_broken_entry():
+            logger.error(f'\033[1;31m Broken Entry Error \033[0m - {self.name} - Cannot fix broken entry')
             return False
         
         if not self.is_correct_location() and not self.fix_location():
+            logger.error(f'\033[1;31m Incorrect Location Error \033[0m - {self.name} - Cannot move to correct destination')
             return False
         
         if not self.is_valid_link() and not self.fix_link():
+            logger.error(f'\033[1;31m Broken Symlink Error \033[0m - {self.name} - Cannot link file')
             return False
         
         return True
