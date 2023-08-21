@@ -40,9 +40,3 @@ def test_equal_entries_with_small_change():
     entry2 = first_entry_small_change()
 
     assert get_md5(entry1) != get_md5(entry2)
-
-# def test_env_with_env(env):
-#     assert os.getenv('DOTHOME') == '/home/username'
-#     assert os.getenv('DOTDIR') == '/home/username/dotfiles'
-#     assert os.getenv('DPATH') == '/home/username/dotfiles/.config/doty'
-#     assert os.getenv('DOTY_LOG_PATH') == '/home/username/dotfiles/.config/doty/doty.log'
