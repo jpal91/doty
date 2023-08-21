@@ -5,7 +5,8 @@ from classes import DotyEntry
 
 HOME = os.environ['DOTHOME']
 DOTDIR = os.environ['DOTY_DIR']
-DPATH = os.environ['DPATH']
+# DPATH = os.environ['DPATH']
+CPATH = os.path.join(DOTDIR, '.doty_config')
 
 logger = logging.getLogger('doty')
 
@@ -51,10 +52,10 @@ def main(check: bool, force: bool) -> None:
     if force:
         check = False
     
-    with open(os.path.join(DOTDIR, "dotycfg.yml")) as f:
+    with open(os.path.join(CPATH, "dotycfg.yml")) as f:
         cfg_yml = yaml.safe_load(f)
 
-    with open(os.path.join(DOTDIR, 'doty_lock.yml')) as f:
+    with open(os.path.join(CPATH, 'doty_lock.yml')) as f:
         lock_yml = yaml.safe_load(f)
     
     if not cfg_yml and not lock_yml:
@@ -147,7 +148,7 @@ def main(check: bool, force: bool) -> None:
     
     cfg_entry = new_entry.vals()
 
-    with open(os.path.join(DPATH, "dotycfg.yml"), 'a') as f:
+    with open(os.path.join(CPATH, "dotycfg.yml"), 'a') as f:
         yaml.safe_dump([cfg_entry], f, sort_keys=False)
     
     print('')
@@ -156,7 +157,7 @@ def main(check: bool, force: bool) -> None:
     if not lock_entry:
         return
     
-    with open(os.path.join(DPATH, "doty_lock.yml"), 'a') as f:
+    with open(os.path.join(CPATH, "doty_lock.yml"), 'a') as f:
         yaml.safe_dump([lock_entry], f, sort_keys=False)
     
     logger.info('\033[1;36mAdded entry to doty_lock.yml')

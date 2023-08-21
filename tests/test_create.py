@@ -6,8 +6,8 @@ import pytest
 @pytest.fixture(scope='module')
 def setup(temp_dir):
     from doty.classes.DotyEntries import DotyEntries
-    cfg = temp_dir / 'dotfiles' / 'dotycfg.yml'
-    lock = temp_dir / 'dotfiles' / 'doty_lock.yml'
+    cfg = temp_dir / 'dotfiles' / '.doty_config' / 'dotycfg.yml'
+    lock = temp_dir / 'dotfiles' / '.doty_config' / 'doty_lock.yml'
 
     doty_entries = DotyEntries(['.bashrc', '.zshrc', '.zsh_history'])
     doty_entries.fix_all()
@@ -28,6 +28,10 @@ def setup(temp_dir):
 def create():
     from doty.create import main
     return main
+
+@pytest.fixture
+def lock_path(temp_dir):
+    return temp_dir / 'dotfiles' / '.doty_config' / 'doty_lock.yml'
 
 def test_empty_files(temp_dir, create):
     with pytest.raises(SystemExit) as e:
@@ -54,14 +58,13 @@ def test_name_already_exists(setup, monkeypatch, create):
     assert e.type == SystemExit
     assert e.value.code == 1
 
-def test_create_new_entry(setup, temp_dir, monkeypatch, create):
+def test_create_new_entry(setup, temp_dir, lock_path, monkeypatch, create):
     (temp_dir / '.good_entry1').touch()
     inp = iter(['.good_entry1', '', '', '', '', '', ''])
     monkeypatch.setattr('builtins.input', lambda _: next(inp))
 
     create(False, False)
 
-    lock_path = temp_dir / 'dotfiles' / 'doty_lock.yml'
     home_path = temp_dir / '.good_entry1'
     dotfiles_path = temp_dir / 'dotfiles' / '.good_entry1'
     with open(lock_path) as f:
@@ -71,14 +74,13 @@ def test_create_new_entry(setup, temp_dir, monkeypatch, create):
     assert os.path.islink(home_path)
     assert os.path.isfile(dotfiles_path)
 
-def test_create_new_unlinked_entry(setup, temp_dir, monkeypatch, create):
+def test_create_new_unlinked_entry(setup, temp_dir, lock_path, monkeypatch, create):
     (temp_dir / '.good_entry2').touch()
     inp = iter(['.good_entry2', '', '', '', 'n', ''])
     monkeypatch.setattr('builtins.input', lambda _: next(inp))
 
     create(False, False)
 
-    lock_path = temp_dir / 'dotfiles' / 'doty_lock.yml'
     home_path = temp_dir / '.good_entry2'
     dotfiles_path = temp_dir / 'dotfiles' / '.good_entry2'
     with open(lock_path) as f:
