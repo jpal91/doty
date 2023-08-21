@@ -5,7 +5,8 @@ from classes import DotyEntries
 
 HOME = os.environ['DOTHOME']
 DOTDIR = os.environ['DOTY_DIR']
-DPATH = os.environ['DPATH']
+# DPATH = os.environ['DPATH']
+CPATH = os.path.join(DOTDIR, '.doty_config')
 
 logger = logging.getLogger('doty')
 
@@ -78,10 +79,10 @@ def delete_ent(locks: list, cfgs: list) -> list:
 
 def main(delete: bool = False):
 
-    with open(os.path.join(DOTDIR, "dotycfg.yml")) as f:
+    with open(os.path.join(CPATH, "dotycfg.yml")) as f:
         cfg_yml = yaml.safe_load(f)
 
-    with open(os.path.join(DOTDIR, 'doty_lock.yml')) as f:
+    with open(os.path.join(CPATH, 'doty_lock.yml')) as f:
         lock_yml = yaml.safe_load(f)
     
     if not cfg_yml and not lock_yml:
@@ -111,8 +112,8 @@ def main(delete: bool = False):
 
     lock.fix_all()
 
-    with open(os.path.join(DPATH, "dotycfg.yml"), 'w') as f:
+    with open(os.path.join(CPATH, "dotycfg.yml"), 'w') as f:
         yaml.safe_dump(cfg.get_cfg_entries(), f, sort_keys=False)
 
-    with open(os.path.join(DPATH, "doty_lock.yml"), 'w') as f:
+    with open(os.path.join(CPATH, "doty_lock.yml"), 'w') as f:
         yaml.safe_dump(lock.get_hashable_entries(), f, sort_keys=False)

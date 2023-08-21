@@ -6,12 +6,16 @@ from helpers.stream_logger import init_stream_logger
 init_stream_logger()
 logger = logging.getLogger('doty')
 
-env_path = os.path.join(os.environ['HOME'], '.config', 'doty', 'dotyrc')
+# env_path = os.path.join(os.environ['HOME'], '.config', 'doty', 'dotyrc')
+env_path = os.path.join(os.environ['HOME'], 'dotfiles', '.doty_config', 'dotyrc')
 
 if __name__ == "__main__":
     parser = ArgumentParser()
     subparser = parser.add_subparsers(dest='command')
     parser_init = subparser.add_parser('init', help='Initialize doty')
+    parser_init.add_argument('-a', help='Alternate home directory', type=str, default='')
+    parser_init.add_argument('-q', help='Quiet mode - no output', action='store_true', default=False)
+
     parser_update = subparser.add_parser('update', help='Update doty lock file', aliases=['up'])
     
     parser_status = subparser.add_parser('status', help='Show status of doty lock or config files', aliases=['st'])
@@ -37,7 +41,7 @@ if __name__ == "__main__":
     
     if args.command == 'init':
         from init import main as init
-        init(True)
+        init(alt_home=args.a, quiet=args.q)
         exit(0)
 
     if not os.path.isfile(env_path):

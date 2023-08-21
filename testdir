@@ -4,7 +4,31 @@ if [ -d /tmp/dotytest ]; then
     rm -rf /tmp/dotytest
 fi
 
-mkdir /tmp/dotytest
+# mkdir /tmp/dotytest
+
+# for f in $(ls -A $HOME);
+# do
+#     if [ -f $HOME/$f ]; then
+#         cp $HOME/$f /tmp/dotytest
+#     fi
+# done
+
+# mkdir /tmp/dotytest/dotfiles
+# mkdir -p /tmp/dotytest/.config/doty
+# mkdir /tmp/dotytest/dotfiles/logs
+# # touch /tmp/dotytest/logs/doty.log
+# # cp $HOME/dotfiles/.dotyrc /tmp/dotytest/dotfiles
+# if [ -z "$CODESPACES" ]; then
+#     ln -s $HOME/dev/doty/dotycfg.yml /tmp/dotytest/dotfiles/.doty_config/dotycfg.yml
+#     ln -s $HOME/dev/doty/doty_lock.yml /tmp/dotytest/dotfiles/.doty_config/doty_lock.yml
+#     # ln -s $HOME/dev/doty/.env /tmp/dotytest/dotfiles/.config/doty/dotyrc
+#     # cp $HOME/.ssh /tmp/dotytest -r
+# else
+#     cp /workspaces/doty/dotycfg.yml /tmp/dotytest/dotfiles
+#     cp /workspaces/doty/doty_lock.yml /tmp/dotytest/dotfiles
+# fi
+
+python $HOME/dev/doty/doty init -q -a /tmp/dotytest
 
 for f in $(ls -A $HOME);
 do
@@ -13,16 +37,12 @@ do
     fi
 done
 
-mkdir /tmp/dotytest/dotfiles
-mkdir -p /tmp/dotytest/.config/doty
-mkdir /tmp/dotytest/dotfiles/logs
-# touch /tmp/dotytest/logs/doty.log
-# cp $HOME/dotfiles/.dotyrc /tmp/dotytest/dotfiles
 if [ -z "$CODESPACES" ]; then
-    ln -s $HOME/dev/doty/dotycfg.yml /tmp/dotytest/dotfiles/dotycfg.yml
-    ln -s $HOME/dev/doty/doty_lock.yml /tmp/dotytest/dotfiles/doty_lock.yml
-    # ln -s $HOME/dev/doty/.env /tmp/dotytest/dotfiles/.config/doty/dotyrc
+    ln -sf $HOME/dotfiles/.doty_config/dotycfg.yml /tmp/dotytest/dotfiles/.doty_config/dotycfg.yml
+    ln -sf $HOME/dotfiles/.doty_config/doty_lock.yml /tmp/dotytest/dotfiles/.doty_config/doty_lock.yml
+    ln -sf $HOME/dotfiles/.doty_config/dotyrc /tmp/dotytest/dotfiles/.doty_config/dotyrc
     # cp $HOME/.ssh /tmp/dotytest -r
+    # cp $HOME/dev/do
 else
     cp /workspaces/doty/dotycfg.yml /tmp/dotytest/dotfiles
     cp /workspaces/doty/doty_lock.yml /tmp/dotytest/dotfiles
