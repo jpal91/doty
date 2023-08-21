@@ -1,7 +1,10 @@
 import os
+import logging
+
+logger = logging.getLogger('doty')
 
 def create_dotyrc(dotyrc: str, home_path: str, dotfiles: str, logpath: str):
-    print('Creating Doty env file')
+    logger.info('Creating Doty env file')
     os.makedirs(os.path.dirname(dotyrc), exist_ok=True)
 
     file_content = f"""\
@@ -14,32 +17,35 @@ def create_dotyrc(dotyrc: str, home_path: str, dotfiles: str, logpath: str):
         f.write(file_content)
 
 def create_dotfiles(dotfiles: str):
-    print('Creating Dotfiles directory')
+    logger.info('Creating Dotfiles directory')
     os.makedirs(dotfiles)
 
 def create_doty_config_dir(doty_cfg_dir: str):
-    print('Creating Doty configuration directory')
+    logger.info('Creating Doty configuration directory')
     os.makedirs(doty_cfg_dir)
 
 def create_doty_cfg(doty_cfg: str):
-    print('Creating Doty configuration file')
+    logger.info('Creating Doty configuration file')
     with open(doty_cfg, 'w') as f:
         f.write('# Doty configuration file')
 
 def create_doty_lock(doty_lock: str):
-    print('Creating Doty lock file')
+    logger.info('Creating Doty lock file')
     with open(doty_lock, 'w') as f:
         f.write('# Doty lock file')
 
 def create_doty_logs(doty_logs: str):
-    print('Creating Doty logs directory')
+    logger.info('Creating Doty logs directory')
     os.makedirs(doty_logs)
 
     with open(os.path.join(doty_logs, 'doty.log'), 'w') as f:
         f.write('# Doty logs file')
 
-def main(alt_home: str = ''):
-    print('Creating Doty - The Dotfiles Manager')
+def main(alt_home: str = '', quiet: bool = False):
+    if quiet:
+        logger.setLevel(logging.ERROR)
+    
+    logger.info('Creating Doty - The Dotfiles Manager')
     
     home_path = os.environ['HOME'] if not alt_home else alt_home
     dotfiles = os.path.join(home_path, 'dotfiles')
@@ -69,4 +75,4 @@ def main(alt_home: str = ''):
     if not os.path.isfile(dotyrc):
         create_dotyrc(dotyrc, home_path, dotfiles, doty_logs)
     
-    print('Doty created successfully')
+    logger.info('Doty created successfully')
