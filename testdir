@@ -27,8 +27,11 @@ fi
 #     cp /workspaces/doty/dotycfg.yml /tmp/dotytest/dotfiles
 #     cp /workspaces/doty/doty_lock.yml /tmp/dotytest/dotfiles
 # fi
-
-python $HOME/dev/doty/doty init -q -a /tmp/dotytest
+if [ -z "$CODESPACES" ]; then
+    python $HOME/dev/doty/doty init -q -a /tmp/dotytest
+else
+    python /workspaces/doty/doty init -q -a /tmp/dotytest
+fi
 
 for f in $(ls -A $HOME);
 do
@@ -44,6 +47,7 @@ if [ -z "$CODESPACES" ]; then
     # cp $HOME/.ssh /tmp/dotytest -r
     # cp $HOME/dev/do
 else
-    cp /workspaces/doty/dotycfg.yml /tmp/dotytest/dotfiles
-    cp /workspaces/doty/doty_lock.yml /tmp/dotytest/dotfiles
+    ln -sf $HOME/dotfiles/.doty_config/dotycfg.yml /tmp/dotytest/dotfiles/.doty_config/dotycfg.yml
+    ln -sf $HOME/dotfiles/.doty_config/doty_lock.yml /tmp/dotytest/dotfiles/.doty_config/doty_lock.yml
+    # ln -sf $HOME/dotfiles/.doty_config/dotyrc /tmp/dotytest/dotfiles/.doty_config/dotyrc
 fi
