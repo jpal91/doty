@@ -49,6 +49,7 @@ def test_stop_on_user_exit(setup, monkeypatch, create):
     assert e.type == SystemExit
     assert e.value.code == 0
 
+
 def test_name_already_exists(setup, monkeypatch, create):
     monkeypatch.setattr('builtins.input', lambda _: '.bashrc')
     
@@ -100,6 +101,21 @@ def test_create_errors(setup, temp_dir, monkeypatch, create, capfd):
     capture = capfd.readouterr()
     assert capture.err == '\033[1;31mName cannot be empty\n\n'
     
+def test_create_new_nested_entry(setup, temp_dir, lock_path, monkeypatch, create):
+    (temp_dir / '.good_entry4').touch()
+    inp = iter(['.good_entry4', '', 'good_dir/', '', 'n', ''])
+    monkeypatch.setattr('builtins.input', lambda _: next(inp))
+
+    create(False, False)
+
+    home_path = temp_dir / '.good_entry4'
+    dotfiles_path = temp_dir / 'dotfiles' / 'good_dir' / '.good_entry4'
+    with open(lock_path) as f:
+        lock_yml = yaml.safe_load(f)
+    
+    assert '.good_entry4' in [ e['name'] for e in lock_yml ]
+    assert not os.path.islink(home_path)
+    assert os.path.isfile(dotfiles_path)
         
 
 

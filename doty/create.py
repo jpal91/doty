@@ -21,7 +21,10 @@ def double_check(type: str, entry: str) -> bool:
         return True
     return False
 
-def check_dst(dst: str) -> str:
+def check_dst(dst: str, name: str) -> str:
+    if dst[-1] == '/':
+        dst = os.path.join(dst, name)
+
     path = os.path.join(DOTDIR, dst)
     if not os.path.exists(path):
         return path
@@ -48,6 +51,73 @@ def get_input(prompt: str) -> str:
         exit(0)
     return inp
 
+def get_name(current_names: set, check: bool) -> str:
+    name = ''
+    
+    while not name:
+        name = get_input('Name of the file: ')
+        
+        if not name:
+            logger.error('\033[1;31mName cannot be empty\n')
+        elif name in current_names:
+            logger.error('\033[1;31mFile name currently in configuration - please edit with doty update -e <NAME>')
+            exit(1)
+        elif check and not double_check('name', name):
+            name = ''
+        else:
+            break
+    
+    return name
+
+def get_src(name: str, check: bool) -> str:
+    src = find_file(name)
+
+    if src:
+        check_src = get_input(f'Found file at \033[1;37m{src}\033[0m - is this correct? (Y/n): ')
+
+        if not check_src or check_src.lower() == 'y':
+            return src
+        else:
+            src = ''
+    
+    while not src:
+        src_input = get_input('Please enter full file path, or path relative to your Home Directory: ')
+        
+        if not src_input:
+            logger.error('\033[1;31mFile not found, please try again\n')
+            continue
+        
+        src = find_file(src_input)
+
+        if not src:
+            logger.error('\033[1;31mFile not found, please try again\n')
+        elif check and not double_check('source', src):
+            src = ''
+        else:
+            break
+    
+    return src
+
+def get_dst(name: str, check: bool) -> str:
+    dst = ''
+
+    while not dst:
+        dst_input = get_input(f'Please enter the new location in the Dotfiles directory (or press enter for {name}): \033[1;37m{DOTDIR}/\033[0m')
+
+        if not dst_input:
+            dst_input = name
+
+        dst = check_dst(dst_input, name)
+
+        if not dst:
+            logger.error('\033[1;31mDestination already exists, please try again\n')
+        elif check and not double_check('destination', dst):
+            dst = ''
+        else:
+            break
+    
+    return dst
+
 def main(check: bool, force: bool) -> None:
     if force:
         check = False
@@ -65,66 +135,18 @@ def main(check: bool, force: bool) -> None:
     logger.info('\n\033[1;33mCreating new Doty Entry...')
     logger.info('\033[1;37mTo quit at any time, enter EXIT or press Ctrl + C\n')
     current_names = { e['name'] for e in [*cfg_yml, *lock_yml] }
-    name = ''
     
-    while not name:
-        name = get_input('Name of the file: ')
-        
-        if not name:
-            logger.error('\033[1;31mName cannot be empty\n')
-        elif name in current_names:
-            logger.error('\033[1;31mFile name currently in configuration - please edit with doty update -e <NAME>')
-            exit(1)
-        elif check and not double_check('name', name):
-            name = ''
-        else:
-            break
-
+    name = get_name(current_names, check)
     logger.debug(f'Name - {name}')
-    src = find_file(name)
-
-    if src:
-        check_src = get_input(f'Is this the file? - \033[1;37m{src}\033[0m \033[0;36m(Y/n): ')
-
-        if check_src and check_src.lower() != 'y':
-            src = ''
-        
-    while not src:
-        src_input = get_input('Please enter full file path, or path relative to your Home Directory: ')
-        
-        if not src_input:
-            logger.error('\033[1;31mFile not found, please try again\n')
-            continue
-        
-        src = find_file(src_input)
-
-        if not src:
-            logger.error('\033[1;31mFile not found, please try again\n')
-        elif check and not double_check('source', src):
-            src = ''
-        else:
-            break
     
+    src = get_src(name, check)
     logger.debug(f'Src - {src}')
-    dst = ''
-
-    while not dst:
-        dst_input = get_input(f'Please enter the new location in the Dotfiles directory (or press enter for {name}): \033[1;37m{DOTDIR}/\033[0m')
-
-        if not dst_input:
-            dst_input = name
-
-        dst = check_dst(dst_input)
-
-        if not dst:
-            logger.error('\033[1;31mDestination already exists, please try again\n')
-        elif check and not double_check('destination', dst):
-            dst = ''
-        else:
-            break
     
+    dst = get_dst(name, check)
     logger.debug(f'Dst - {dst}')
+
     notes = get_input('Please enter any notes for this entry (optional): ')
+    
     linked = get_input('Should this entry be symlinked back to the Home Directory? (Y/n): ')
 
     if not linked or linked.lower() == 'y':
@@ -133,6 +155,7 @@ def main(check: bool, force: bool) -> None:
         linked = False
     
     logger.debug(f'Linked - {linked}')
+
     new_entry = DotyEntry({ 'name': name, 'src': src, 'dst': dst, 'notes': notes, 'linked': linked })
 
     if not force and not double_check('entry', new_entry):
