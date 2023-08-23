@@ -1,7 +1,7 @@
 import os
 import logging
-import yaml
 from classes import DotyEntries
+from helpers.yaml import get_yaml, put_yaml
 
 HOME = os.environ['DOTHOME']
 DOTDIR = os.environ['DOTY_DIR']
@@ -79,11 +79,7 @@ def delete_ent(locks: list, cfgs: list) -> list:
 
 def main(delete: bool = False):
 
-    with open(os.path.join(CPATH, "dotycfg.yml")) as f:
-        cfg_yml = yaml.safe_load(f)
-
-    with open(os.path.join(CPATH, 'doty_lock.yml')) as f:
-        lock_yml = yaml.safe_load(f)
+    cfg_yml, lock_yml = get_yaml()
     
     if not cfg_yml and not lock_yml:
         logger.warning('dotycfg.yml is empty, please add entries to it')
@@ -112,8 +108,7 @@ def main(delete: bool = False):
 
     lock.fix_all()
 
-    with open(os.path.join(CPATH, "dotycfg.yml"), 'w') as f:
-        yaml.safe_dump(cfg.get_cfg_entries(), f, sort_keys=False)
+    cfg_entries = cfg.get_cfg_entries()
+    hashable_entries = lock.get_hashable_entries()
 
-    with open(os.path.join(CPATH, "doty_lock.yml"), 'w') as f:
-        yaml.safe_dump(lock.get_hashable_entries(), f, sort_keys=False)
+    put_yaml(cfg_entries, hashable_entries)

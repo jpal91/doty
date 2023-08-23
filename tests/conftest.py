@@ -7,6 +7,7 @@ def create_dummy_home_files(home_dir):
     (home_dir / '.zshrc').touch()
     (home_dir / '.zsh_history').touch()
     (home_dir / '.wgetrc').touch()
+    (home_dir / '.lesshst').touch()
 
 # def create_dummy_doty_files(doty_dir):
 #     (doty_dir / 'dotycfg.yml').touch()
