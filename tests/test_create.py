@@ -24,6 +24,14 @@ def setup(temp_dir):
     handler.setLevel(logging.ERROR)
     logger.addHandler(handler)
 
+    yield
+
+    for e in doty_entries.entries:
+        if not e.entry_complete():
+            continue
+        e._locked_entry = True
+        e.undo()
+
 @pytest.fixture
 def create():
     from doty.create import main

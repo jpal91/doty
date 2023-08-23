@@ -36,6 +36,7 @@ def test_doty_entries(doty_entries):
     assert len(doty_entries.get_cfg_entries()) == 4
     assert len(doty_entries.get_hashable_entries()) == 0
 
+
 def test_doty_entries_fixed(doty_entries_fixed):
     assert len(doty_entries_fixed.entries) == 4
     assert doty_entries_fixed.entries[0].name == '.bashrc'
