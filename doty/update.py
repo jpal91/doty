@@ -9,6 +9,8 @@ handler = logging.StreamHandler()
 handler.setLevel(logging.INFO)
 logger.addHandler(handler)
 
+logger.han
+
 def link_new_files(dotfiles: list) -> None:
     """Link new files in the repo"""
     for dotfile in dotfiles:
