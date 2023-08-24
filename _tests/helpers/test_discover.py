@@ -3,18 +3,7 @@ import pytest
 from _doty.helpers.discover import find_all_dotfiles, find_all_links, get_doty_ignore, discover
 
 @pytest.fixture(scope='module', autouse=True)
-def setup(temp_dir):
-    dotfiles = temp_dir / 'dotfiles'
-    (dotfiles / '.dot_file1').touch()
-    (dotfiles / '.dot_file2').touch()
-    (dotfiles / 'dot_dir').mkdir()
-    (dotfiles / 'dot_dir' / '.dot_file3').touch()
-    (dotfiles / 'dot_dir' / 'dot_file4').touch()
-    (dotfiles / 'dot_dir' / '.dot_file6').touch()
-    (temp_dir / '.dot_file1').symlink_to(dotfiles / '.dot_file1')
-    (temp_dir / '.dot_file2').symlink_to(dotfiles / '.dot_file2')
-    (temp_dir / '.dot_file3').symlink_to(dotfiles / 'dot_dir' / '.dot_file3')
-    (temp_dir / '.dot_file5').touch()
+def setup(temp_dir, dummy_files):
     os.environ.update({'HOME': str(temp_dir)})
 
 def test_get_doty_ignore(temp_dir):

@@ -7,12 +7,14 @@ def get_repo(path: str) -> Repository:
 def get_status(repo: Repository) -> dict:
     return repo.status()
 
-def make_commit(repo: Repository, message: str) -> None:
+def make_commit(repo: Repository, message: str) -> str:
     index = repo.index
     ref = repo.head.name
     parent = [repo.head.target]
     index.add_all()
     index.write()
     tree = index.write_tree()
-    author_commiter = Signature(os.environ['GIT_AUTHOR_NAME'] or 'doty', os.environ['GIT_AUTHOR_EMAIL'] or 'doty@email.com')
-    repo.create_commit(ref, author_commiter, author_commiter, message, tree, parent)
+    author_commiter = Signature(os.getenv('GIT_AUTHOR_NAME', 'doty'), os.getenv('GIT_AUTHOR_EMAIL', 'doty@email.com'))
+    commit = repo.create_commit(ref, author_commiter, author_commiter, message, tree, parent)
+
+    return commit
