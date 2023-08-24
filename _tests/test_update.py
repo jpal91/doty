@@ -1,6 +1,6 @@
 import os
 import pytest
-from _doty.update import link_new_files, unlink_files, update
+from _doty.update import link_new_files, unlink_files, commit_changes, update
 
 @pytest.fixture(scope='module', autouse=True)
 def setup(temp_dir, dummy_files):
@@ -22,16 +22,40 @@ def test_unlink_files(temp_dir):
     assert not os.path.islink(str(temp_dir / '.dot_file3'))
     (temp_dir / '.dot_file3').symlink_to(temp_dir / 'dotfiles' / 'dot_dir' / '.dot_file3')
 
-def test_update(temp_dir):
+def test_commit_changes(temp_dir, git_repo):
+    assert git_repo.status() == {}
+    link_new_files([str(temp_dir / 'dotfiles' / 'dot_dir' / 'dot_file4')])
+    unlink_files(['.dot_file3'])
+    assert git_repo.status() == {}
+
+    commit_changes(1, 1)
+    assert git_repo.status() == {}
+    assert git_repo.head.peel().message == 'Links(A1|R1)'
+
+    (temp_dir / 'dotfiles' / '.dot_file7').touch()
+    assert git_repo.status() == {'.dot_file7': 128}
+    link_new_files([str(temp_dir / 'dotfiles' / '.dot_file7')])
+    assert git_repo.status() == {'.dot_file7': 128}
+    commit_changes(1, 0)
+    assert git_repo.status() == {}
+    assert git_repo.head.peel().message == 'Links(A1|R0) | File Changes'
+
+    os.unlink(str(temp_dir / 'dot_file4'))
+    (temp_dir / '.dot_file3').symlink_to(temp_dir / 'dotfiles' / 'dot_dir' / '.dot_file3')
+
+def test_update(temp_dir, git_repo):
     assert not os.path.islink(str(temp_dir / 'dot_file4'))
     update()
     assert os.path.islink(str(temp_dir / 'dot_file4'))
+    assert git_repo.head.peel().message == 'Links(A2|R0)'
 
     di_path = temp_dir / 'dotfiles' / '.doty_config' / '.dotyignore'
     with open(di_path, 'a') as f:
         f.write('\n.dot_file2')
     
+    (temp_dir / 'dotfiles' / '.dot_file8').touch()
     assert os.path.islink(str(temp_dir / '.dot_file2'))
     update()
     assert not os.path.islink(str(temp_dir / '.dot_file2'))
+    assert git_repo.head.peel().message == 'Links(A1|R1) | File Changes'
     (temp_dir / '.dot_file2').symlink_to(temp_dir / 'dotfiles' / '.dot_file2')

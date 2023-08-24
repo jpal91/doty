@@ -16,7 +16,13 @@ def temp_dir(tmp_path_factory):
     for i in range(5):
         entry = home / f'.good_entry{i}'
         entry.touch()
+
     
+    return home
+
+@pytest.fixture(scope='module')
+def git_repo(temp_dir):
+    dotfiles = temp_dir / 'dotfiles'
     repo = pygit2.init_repository(str(dotfiles))
     ref = 'HEAD'
     index = repo.index
@@ -25,15 +31,15 @@ def temp_dir(tmp_path_factory):
     tree = index.write_tree()
     author_commiter = pygit2.Signature('doty', 'email@email.com')
     repo.create_commit(ref, author_commiter, author_commiter, 'initial commit', tree, [])
-    
-    return home
+
+    yield repo
 
 @pytest.fixture(scope='module')
 def dummy_files(temp_dir):
     dotfiles = temp_dir / 'dotfiles'
     (dotfiles / '.dot_file1').touch()
     (dotfiles / '.dot_file2').touch()
-    (dotfiles / 'dot_dir').mkdir()
+    (dotfiles / 'dot_dir').mkdir(exist_ok=True)
     (dotfiles / 'dot_dir' / '.dot_file3').touch()
     (dotfiles / 'dot_dir' / 'dot_file4').touch()
     (dotfiles / 'dot_dir' / '.dot_file6').touch()
@@ -52,6 +58,10 @@ def dummy_files(temp_dir):
             if file == '.dotyignore':
                 continue
             os.remove(os.path.join(root, file))
+    
+    doty_ignore = temp_dir / 'dotfiles' / '.doty_config' / '.dotyignore'
+    if os.path.exists(doty_ignore):
+        os.unlink(doty_ignore)
 
 
 

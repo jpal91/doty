@@ -1,11 +1,9 @@
 import os
 from pygit2 import Repository, Signature
 
-def get_repo(path: str) -> Repository:
+def get_repo() -> Repository:
+    path = os.path.join(os.environ['HOME'], 'dotfiles', '.git')
     return Repository(path)
-
-def get_status(repo: Repository) -> dict:
-    return repo.status()
 
 def make_commit(repo: Repository, message: str) -> str:
     index = repo.index
