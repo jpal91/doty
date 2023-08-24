@@ -8,7 +8,7 @@ def setup(temp_dir, dummy_files):
 
 def test_get_doty_ignore(temp_dir):
     doty_ignore = get_doty_ignore()
-    di_path = temp_dir / 'dotfiles' / '.dotyignore'
+    di_path = temp_dir / 'dotfiles' / '.doty_config' / '.dotyignore'
 
     assert len(doty_ignore) == 0
 
@@ -21,19 +21,18 @@ def test_get_doty_ignore(temp_dir):
     assert doty_ignore[0] == '.dot_file6'
 
 def test_find_all_dotfiles(temp_dir):
-    dotfiles = find_all_dotfiles(['.dot_file6'])
+    dotfiles = find_all_dotfiles()
     dot_dir = temp_dir / 'dotfiles'
 
-    assert len(dotfiles) == 4
+    assert len(dotfiles) == 5
     assert str(dot_dir / '.dot_file1') in dotfiles
     assert str(dot_dir / '.dot_file2') in dotfiles
     assert str(dot_dir / 'dot_dir' / '.dot_file3') in dotfiles
     assert str(dot_dir / 'dot_dir' / 'dot_file4') in dotfiles
     assert str(dot_dir / '.dot_file5') not in dotfiles
-    assert str(dot_dir / 'dot_dir' / '.dot_file6') not in dotfiles
 
 def test_find_all_links(temp_dir):
-    dotfiles = find_all_dotfiles(['.dot_file6'])
+    dotfiles = find_all_dotfiles()
     links = find_all_links(dotfiles)
 
     assert len(links) == 3
@@ -45,8 +44,20 @@ def test_find_all_links(temp_dir):
     assert str(temp_dir / '.dot_file6') not in links
 
 def test_discover(temp_dir):
-    links = discover()
+    links, unlinks = discover()
 
     assert len(links) == 1
     assert str(temp_dir / 'dotfiles' / 'dot_dir' / 'dot_file4') in links
     assert str(temp_dir / 'dotfiles' / 'dot_dir' / '.dot_file6') not in links
+    assert len(unlinks) == 0
+
+    di_path = temp_dir / 'dotfiles' / '.doty_config' / '.dotyignore'
+
+    with open(di_path, 'a') as f:
+        f.write('\n.dot_file2')
+    
+    links, unlinks = discover()
+
+    assert len(unlinks) == 1
+    assert len(links) == 1
+    assert '.dot_file2' in unlinks

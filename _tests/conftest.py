@@ -49,6 +49,8 @@ def dummy_files(temp_dir):
         if '.doty_config' in dirs:
             dirs.remove('.doty_config')
         for file in files:
+            if file == '.dotyignore':
+                continue
             os.remove(os.path.join(root, file))
 
 

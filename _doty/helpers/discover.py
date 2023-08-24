@@ -1,18 +1,18 @@
 import os
 
-def find_all_dotfiles(ignore: list) -> list:
+def find_all_dotfiles() -> list:
     """Find all dotfiles in the user's home directory."""
     dot_dir = os.path.join(os.environ['HOME'], 'dotfiles')
     dotfiles = []
-    ignored = ['.dotyignore', *ignore]
 
     for root, dirs, files in os.walk(dot_dir):
         # Skips .doty_config
         if '.doty_config' in dirs:
             dirs.remove('.doty_config')
+        if '.git' in dirs:
+            dirs.remove('.git')
+
         for file in files:
-            if file in ignored:
-                continue
             dotfiles.append(os.path.join(root, file))
     return dotfiles
 
@@ -28,7 +28,7 @@ def find_all_links(dotfiles: list) -> list:
 
 def get_doty_ignore() -> list:
     """Get the contents of .dotyignore"""
-    doty_ignore = os.path.join(os.environ['HOME'], 'dotfiles', '.dotyignore')
+    doty_ignore = os.path.join(os.environ['HOME'], 'dotfiles', '.doty_config', '.dotyignore')
     if os.path.isfile(doty_ignore):
         with open(doty_ignore, 'r') as f:
             return f.read().split('\n')
@@ -37,9 +37,11 @@ def get_doty_ignore() -> list:
 def discover() -> list:
     """Find any files in the dotfiles directory which are not linked yet"""
     doty_ignore = get_doty_ignore()
-    dotfiles = find_all_dotfiles(doty_ignore)
+    dotfiles = find_all_dotfiles()
     links = find_all_links(dotfiles)
     
-    # ignored = [*[os.path.basename(link) for link in links], *doty_ignore]
-    # return [dotfile for dotfile in dotfiles if os.path.basename(dotfile) not in ignored]
-    return [dotfile for dotfile in dotfiles if os.path.basename(dotfile) not in [os.path.basename(link) for link in links]]
+    base_links = [os.path.basename(link) for link in links]
+    new_link = [dotfile for dotfile in dotfiles if os.path.basename(dotfile) not in base_links and os.path.basename(dotfile) not in doty_ignore]
+    unlink = [ignored for ignored in doty_ignore if ignored in base_links]
+
+    return new_link, unlink

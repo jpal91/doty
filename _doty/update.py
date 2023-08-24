@@ -8,9 +8,18 @@ def link_new_files(dotfiles: list) -> None:
         home_path = os.path.join(os.environ['HOME'], base)
         os.symlink(dotfile, home_path)
 
+def unlink_files(dotfiles: list) -> None:
+    """Unlink files in the repo"""
+    for dotfile in dotfiles:
+        home_path = os.path.join(os.environ['HOME'], dotfile)
+        os.unlink(home_path)
+
 def update():
     """Detect changes in the repo"""
-    changes = discover()
+    links, unlinks = discover()
 
-    if changes:
-        link_new_files(changes)
+    if links:
+        link_new_files(links)
+    
+    if unlinks:
+        unlink_files(unlinks)
