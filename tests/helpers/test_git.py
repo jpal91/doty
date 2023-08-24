@@ -1,7 +1,7 @@
 import os
 import pytest
 from pygit2 import Repository
-from _doty.helpers.git import get_repo, make_commit
+from doty.helpers.git import get_repo, make_commit
 
 @pytest.fixture(scope='module', autouse=True)
 def setup(temp_dir):

@@ -1,6 +1,6 @@
 import os
 import pytest
-from _doty.update import link_new_files, unlink_files, commit_changes, update
+from doty.update import link_new_files, unlink_files, commit_changes, update
 
 @pytest.fixture(scope='module', autouse=True)
 def setup(temp_dir, dummy_files):

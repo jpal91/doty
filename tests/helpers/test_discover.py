@@ -1,6 +1,6 @@
 import os
 import pytest
-from _doty.helpers.discover import find_all_dotfiles, find_all_links, get_doty_ignore, discover
+from doty.helpers.discover import find_all_dotfiles, find_all_links, get_doty_ignore, discover
 
 @pytest.fixture(scope='module', autouse=True)
 def setup(temp_dir, dummy_files):

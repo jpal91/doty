@@ -1,77 +1,65 @@
+import os
 import pytest
-from dotenv import load_dotenv
-from doty.init import main as init_doty
+import pygit2
 
-def create_dummy_home_files(home_dir):
-    (home_dir / '.bashrc').touch()
-    (home_dir / '.zshrc').touch()
-    (home_dir / '.zsh_history').touch()
-    (home_dir / '.wgetrc').touch()
-    (home_dir / '.lesshst').touch()
-
-# def create_dummy_doty_files(doty_dir):
-#     (doty_dir / 'dotycfg.yml').touch()
-#     (doty_dir / 'doty_lock.yml').touch()
-#     (doty_dir / 'logs' / 'doty.log').touch()
-
-# def create_dummy_doty_files(doty_dir):
-#     (doty_dir / '.doty_config' / 'dotycfg.yml').touch()
-#     (doty_dir / '.doty_config' / 'doty_lock.yml').touch()
-#     (doty_dir / 'logs' / 'doty.log').touch()
-
-# def create_dotyrc(home, doty, cfg, logs):
-#     dotyrc = cfg / 'dotyrc'
-#     dotyrc.touch()
-
-#     envs = [
-#         f'DOTHOME="{home}"',
-#         f'DOTY_DIR="{doty}"',
-#         f'DPATH="{doty}"',
-#         f'DOTY_LOG_PATH="{logs}/doty.log"',
-#     ]
-
-#     with open(dotyrc, 'w') as f:
-#         f.write('\n'.join(envs))
-
-# @pytest.fixture(scope='session')
-# def temp_dir(tmp_path_factory):
-#     home_dir = tmp_path_factory.mktemp('home')
-#     dot_dir = home_dir / 'dotfiles'
-#     dot_dir.mkdir()
-#     cfg_dir = home_dir / '.config' / 'doty'
-#     cfg_dir.mkdir(parents=True)
-#     log_dir = dot_dir / 'logs'
-#     log_dir.mkdir()
-
-#     # Create dummy files
-#     create_dummy_home_files(home_dir)
-#     create_dummy_doty_files(dot_dir)
-#     create_dotyrc(home_dir, dot_dir, cfg_dir, log_dir)
-
-#     return home_dir
-
-# @pytest.fixture(autouse=True, scope='session')
-# def load_env(temp_dir):
-#     load_dotenv(temp_dir / '.config' / 'doty' / 'dotyrc')
-
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def temp_dir(tmp_path_factory):
-    home_dir = tmp_path_factory.mktemp('home')
-    # dot_dir = home_dir / 'dotfiles'
-    # dot_dir.mkdir()
-    # cfg_dir = dot_dir / '.doty_config'
-    # cfg_dir.mkdir()
-    # log_dir = dot_dir / 'logs'
-    # log_dir.mkdir()
-    init_doty(alt_home=str(home_dir))
+    home = tmp_path_factory.mktemp('dotytmp')
+    dotfiles = home / 'dotfiles'
+    dotfiles.mkdir()
+    doty_config = dotfiles / '.doty_config'
+    doty_config.mkdir()
+    doty_lock = doty_config / 'doty_lock.yml'
+    doty_lock.touch()
 
-    # Create dummy files
-    create_dummy_home_files(home_dir)
-    # create_dummy_doty_files(dot_dir)
-    # create_dotyrc(home_dir, dot_dir, cfg_dir, log_dir)
+    for i in range(5):
+        entry = home / f'.good_entry{i}'
+        entry.touch()
 
-    return home_dir
+    
+    return home
 
-@pytest.fixture(autouse=True, scope='session')
-def load_env(temp_dir):
-    load_dotenv(temp_dir / 'dotfiles' / '.doty_config' / 'dotyrc')
+@pytest.fixture(scope='module')
+def git_repo(temp_dir):
+    dotfiles = temp_dir / 'dotfiles'
+    repo = pygit2.init_repository(str(dotfiles))
+    ref = 'HEAD'
+    index = repo.index
+    index.add_all()
+    index.write()
+    tree = index.write_tree()
+    author_commiter = pygit2.Signature('doty', 'email@email.com')
+    repo.create_commit(ref, author_commiter, author_commiter, 'initial commit', tree, [])
+
+    yield repo
+
+@pytest.fixture(scope='module')
+def dummy_files(temp_dir):
+    dotfiles = temp_dir / 'dotfiles'
+    (dotfiles / '.dot_file1').touch()
+    (dotfiles / '.dot_file2').touch()
+    (dotfiles / 'dot_dir').mkdir(exist_ok=True)
+    (dotfiles / 'dot_dir' / '.dot_file3').touch()
+    (dotfiles / 'dot_dir' / 'dot_file4').touch()
+    (dotfiles / 'dot_dir' / '.dot_file6').touch()
+    (temp_dir / '.dot_file1').symlink_to(dotfiles / '.dot_file1')
+    (temp_dir / '.dot_file2').symlink_to(dotfiles / '.dot_file2')
+    (temp_dir / '.dot_file3').symlink_to(dotfiles / 'dot_dir' / '.dot_file3')
+    (temp_dir / '.dot_file5').touch()
+    
+    yield
+
+    # Cleanup all created files
+    for root, dirs, files in os.walk(temp_dir):
+        if '.doty_config' in dirs:
+            dirs.remove('.doty_config')
+        for file in files:
+            if file == '.dotyignore':
+                continue
+            os.remove(os.path.join(root, file))
+    
+    doty_ignore = temp_dir / 'dotfiles' / '.doty_config' / '.dotyignore'
+    if os.path.exists(doty_ignore):
+        os.unlink(doty_ignore)
+
+
