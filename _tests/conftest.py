@@ -1,7 +1,6 @@
 import os
 import pytest
 import pygit2
-from unittest.mock import patch
 
 @pytest.fixture(scope="session")
 def temp_dir(tmp_path_factory):
@@ -63,11 +62,4 @@ def dummy_files(temp_dir):
     if os.path.exists(doty_ignore):
         os.unlink(doty_ignore)
 
-
-
-# @pytest.fixture(autouse=True)
-# def setup(temp_dir):
-#     # with patch.dict(os.environ, {'HOME': str(temp_dir)}):
-#     #     yield
-#     os.environ.update({'HOME': str(temp_dir)})
 
