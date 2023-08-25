@@ -16,7 +16,7 @@ def temp_dir(tmp_path_factory):
         entry = home / f'.good_entry{i}'
         entry.touch()
 
-    
+    # os.environ.update({"HOME": str(temp_dir), "DOTFILES_PATH": str(temp_dir / "dotfiles")})
     return home
 
 @pytest.fixture(scope='module')
