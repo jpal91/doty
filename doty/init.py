@@ -1,8 +1,12 @@
 import os
 import pygit2
+from classes.DotyLogger import DotyLogger
 from helpers.args import init_args
 
+logger = DotyLogger(file_logging=False)
+
 TEMP_DIR = '/tmp/dotytmp/dotfiles'
+
 
 def gen_dotyrc(dotfiles_path: str) -> str:
     dotyrc_str = f"""\
@@ -10,34 +14,45 @@ def gen_dotyrc(dotfiles_path: str) -> str:
 DOTFILES_PATH="{dotfiles_path}"
 GIT_AUTHOR_NAME="doty"
 GIT_AUTHOR_EMAIL="doty@email.com"
+DOTY_LOG_PATH="{dotfiles_path}/.doty_config/doty.log"
+DOTY_COLOR_LOGGING=true
 """
     return dotyrc_str
 
 def init(temp: bool = False) -> None:
     # Create the dotfiles directory if it doesn't exist
     dotfiles_dir = os.path.join(os.environ['HOME'], 'dotfiles') if not temp else TEMP_DIR
+    logger.info('##bwhite##Initializing Dotfiles Repo\n')
     
     if temp and os.path.exists(dotfiles_dir):
+        logger.warning('##byellow##Temp directory already exists. Replacing...')
         os.system(f'rm -rf {dotfiles_dir}')
         os.mkdir(dotfiles_dir)
     elif os.path.exists(dotfiles_dir) and os.path.isdir(os.path.join(dotfiles_dir, '.git')):
         # TODO: Check if the dotfiles directory is a git repo and add handlers
-        print('dotfiles directory already exists')
-        return
+        logger.error('##bred##Dotfiles directory is already a git repo. Aborting...')
+        exit(1)
     elif not os.path.exists(dotfiles_dir):
+        logger.info(f'##bgreen##Creating##end## ##bwhite##{dotfiles_dir}')
         os.makedirs(dotfiles_dir)
 
     # Initialize the git repo
-    repo = pygit2.init_repository(dotfiles_dir)
+    new_repo = False
+    if not os.path.exists(os.path.join(dotfiles_dir, '.git')):
+        logger.info(f'##bgreen##Initializing##end## ##bwhite##{dotfiles_dir} as a git repo')
+        repo = pygit2.init_repository(dotfiles_dir)
+        new_repo = True
 
     # Create the .doty_config directory if it doesn't exist
     doty_config_dir = os.path.join(dotfiles_dir, '.doty_config')
     if not os.path.exists(doty_config_dir):
+        logger.info(f'##bgreen##Creating##end## ##bwhite##- Doty Config Directory - {doty_config_dir}')
         os.mkdir(doty_config_dir)
     
     # Create doty_lock.yml if it doesn't exist
     doty_lock_path = os.path.join(doty_config_dir, 'doty_lock.yml')
     if not os.path.exists(doty_lock_path):
+        logger.info(f'##bgreen##Creating##end## ##bwhite##- Doty Lock File - {doty_lock_path}')
         with open(doty_lock_path, 'w') as doty_lock:
             doty_lock.write('# Path: ~/.doty_config/doty_lock.yml\n')
             doty_lock.write('# This file is used to keep track of dotfiles and their respective repositories.\n')
@@ -47,23 +62,33 @@ def init(temp: bool = False) -> None:
     # Create the dotyrc file if it doesn't exist
     dotyrc_path = os.path.join(doty_config_dir, 'dotyrc')
     if not os.path.exists(dotyrc_path):
+        logger.info(f'##bgreen##Creating##end## ##bwhite##- Doty Env File - {dotyrc_path}')
         with open(dotyrc_path, 'w') as dotyrc:
             dotyrc.write(gen_dotyrc(dotfiles_dir))
     
     # Create the .dotyignore file if it doesn't exist
     dotyignore_path = os.path.join(doty_config_dir, '.dotyignore')
     if not os.path.exists(dotyignore_path):
+        logger.info(f'##bgreen##Creating##end## ##bwhite##- Doty Ignore File - {dotyignore_path}')
         with open(dotyignore_path, 'w') as dotyignore:
             dotyignore.write('# Add any file names here for Doty to ignore.\n# File names in .dotyignore will not be symlinked, but can be committed to the dotfiles repo.')
     
     # Make first commmit
-    index = repo.index
-    index.add_all()
-    index.write()
-    tree = index.write_tree()
-    author_commiter = pygit2.Signature('doty', 'doty@email.com')
-    repo.create_commit('HEAD', author_commiter, author_commiter, 'Initialized Doty Repo', tree, [])
+    if new_repo:
+        logger.info(f'##bgreen##Making##end## ##bwhite##initial commit')
+        index = repo.index
+        index.add_all()
+        index.write()
+        tree = index.write_tree()
+        author_commiter = pygit2.Signature('doty', 'doty@email.com')
+        repo.create_commit('HEAD', author_commiter, author_commiter, 'Initialized Doty Repo', tree, [])
+    
+    logger.info('##bgreen##Done##end##')
 
 if __name__ == '__main__':
     args = init_args()
-    init()
+
+    if args.quiet:
+        logger.set_quiet()
+
+    init(temp=args.temp)

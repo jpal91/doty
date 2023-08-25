@@ -62,7 +62,7 @@ class DotyLogger:
     bgreen = '\033[1;32m'
     end = '\033[0m'
 
-    def __init__(self, name: str = 'doty', file_logging: bool = True, color: bool = True) -> None:
+    def __init__(self, name: str = 'doty', file_logging: bool = True, color: bool = os.getenv('DOTY_COLOR_LOGGING', True)) -> None:
         self.logger = logging.getLogger(name)
         self.logger.setLevel(logging.DEBUG)
         
@@ -90,6 +90,9 @@ class DotyLogger:
     
     def set_info(self) -> None:
         self.handler.setLevel(logging.INFO)
+    
+    def set_quiet(self) -> None:
+        self.handler.setLevel(logging.ERROR)
     
     def filter_color(self, msg: str) -> str:
         match = re.findall(r'##([a-z]+)##', msg)
