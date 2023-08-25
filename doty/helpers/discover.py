@@ -31,7 +31,8 @@ def get_doty_ignore() -> list:
     doty_ignore = os.path.join(os.environ['HOME'], 'dotfiles', '.doty_config', '.dotyignore')
     if os.path.isfile(doty_ignore):
         with open(doty_ignore, 'r') as f:
-            return f.read().split('\n')
+            items = [ item.strip() for item in f.readlines() if not item.startswith('#') ]
+            return items
     return []
 
 def discover() -> list:

@@ -20,6 +20,15 @@ def test_get_doty_ignore(temp_dir):
     assert len(doty_ignore) == 1
     assert doty_ignore[0] == '.dot_file6'
 
+    with open(di_path, 'a') as di:
+        di.write('\n# This is a test of a comment')
+    
+    doty_ignore = get_doty_ignore()
+
+    assert len(doty_ignore) == 1
+    assert doty_ignore[0] == '.dot_file6'
+    assert '# This is a test of a comment' not in doty_ignore
+
 def test_find_all_dotfiles(temp_dir):
     dotfiles = find_all_dotfiles()
     dot_dir = temp_dir / 'dotfiles'
