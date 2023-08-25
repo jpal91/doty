@@ -49,4 +49,4 @@ def init(temp: bool = False) -> None:
 
 if __name__ == '__main__':
     args = init_args()
-    init(True)
+    init()

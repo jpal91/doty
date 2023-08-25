@@ -1,15 +1,9 @@
 import os
-import logging
+from classes.DotyLogger import DotyLogger
 from helpers.discover import discover
 from helpers.git import make_commit, get_repo
 
-logger = logging.getLogger('doty')
-logger.setLevel(logging.DEBUG)
-handler = logging.StreamHandler()
-handler.setLevel(logging.INFO)
-logger.addHandler(handler)
-
-logger.han
+logger = DotyLogger()
 
 def link_new_files(dotfiles: list) -> None:
     """Link new files in the repo"""
@@ -35,17 +29,36 @@ def commit_changes(links: int, unlinks: int) -> None:
     logger.debug(f'Committing changes: {message} - {repo_status}')
     make_commit(repo, message)
 
-def update(commit: bool = True):
+def update(commit: bool = True, suppress_color: bool = False, dry_run: bool = False):
     """Detect changes in the repo"""
-    logger.info('Discovering changes and updating Dotfiles Repo')
+
+    if suppress_color:
+        logger.set_color(False)
+
+    logger.info('##bblue##Discovering changes and updating Dotfiles Repo\n')
     links, unlinks = discover()
 
+    if dry_run:
+        logger.info('##yellow##Dry run, no changes will be made')
+        logger.info(f'##bgreen##Linking##end## ##bwhite##{len(links)} new files')
+        logger.info(f'##bred##Unlinking##end## ##bwhite##{len(unlinks)} files')
+        return
+
     if links:
+        logger.info(f'##bgreen##Linking##end## ##bwhite##{len(links)} new files')
         link_new_files(links)
     
     if unlinks:
+        logger.info(f'##bred##Unlinking##end## ##bwhite##{len(unlinks)} files')
         unlink_files(unlinks)
     
-    if commit:
-        commit_changes(len(links), len(unlinks))
+    if not links and not unlinks:
+        logger.info('##byellow##No changes detected')
+        return
     
+    if commit:
+        logger.info('##bwhite##Committing changes')
+        commit_changes(len(links), len(unlinks))
+
+if __name__ == '__main__':
+    update(suppress_color=True, dry_run=True)

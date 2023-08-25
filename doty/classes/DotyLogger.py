@@ -55,6 +55,7 @@ class DotyLogger:
     bblue = '\033[1;34m'
     bwhite = '\033[1;37m'
     green = '\033[0;32m'
+    yellow = '\033[0;33m'
     byellow = '\033[1;33m'
     bred = '\033[1;31m'
     bmagenta = '\033[1;35m'
@@ -80,6 +81,9 @@ class DotyLogger:
                 self.file_handler.setFormatter(CustomFileLogFormatter())
             else:
                 self.file_handler.setFormatter(logging.Formatter('%(levelname)s [%(asctime)s] %(module)s %(message)s'))
+    
+    def set_color(self, color: bool) -> None:
+        self.color = color
 
     def set_debug(self) -> None:
         self.handler.setLevel(logging.DEBUG)
