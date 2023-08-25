@@ -1,5 +1,6 @@
 import os
 from classes.DotyLogger import DotyLogger
+from helpers.git import make_commit
 
 logger = DotyLogger()
 
@@ -86,6 +87,16 @@ def get_src(check: bool = True) -> str:
 
     return src
 
+def check_dst(input: str) -> str:
+    dotfiles_dir = os.environ['DOTFILES_PATH']
+    dst = os.path.join(dotfiles_dir, input)
+    
+    if os.path.exists(dst):
+        logger.warning('##bred##Destination path already exists, please try again.')
+        return ''
+    else:
+        return dst
+
 def get_dst(name: str, check: bool = True) -> str:
     dst = ''
     dotfiles_dir = os.environ['DOTFILES_PATH']
@@ -97,13 +108,10 @@ def get_dst(name: str, check: bool = True) -> str:
         if not user_input:
             user_input = name
 
-        dst = os.path.join(dotfiles_dir, user_input)
+        dst = check_dst(user_input)
 
-        if os.path.exists(dst):
-            logger.warning('##bred##Destination path already exists, please try again.')
-            dst = ''
+        if not dst:
             continue
-
         if check and not double_check(dst, 'Destination Path'):
             dst = ''
     
@@ -114,4 +122,30 @@ def add(entry_name: str = '', src: str = '', dst = '', no_git: bool = False, no_
         logger.set_quiet()
     logger.info('##bwhite##Adding Dotfile\nType EXIT or press Ctrl+C to exit at any time.\n')
 
+    if entry_name:
+        name = entry_name
+    else:
+        name = get_name(check=not force)
     
+    if src:
+        src_path = find_src(src)
+
+        if not src_path:
+            logger.error('##bred##Source path does not exist, aborting...')
+            exit(1)
+    else:
+        src_path = get_src(check=not force)
+    
+    if dst:
+        dst_path = check_dst(dst)
+
+        if not dst_path:
+            logger.error('##bred##Destination path already exists, aborting...')
+            exit(1)
+    else:
+        dst_path = get_dst(name, check=not force)
+    
+    linked = not no_link
+
+    if not no_git:
+        logger.info('##bwhite##Adding to git repo')
