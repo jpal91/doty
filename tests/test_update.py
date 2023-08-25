@@ -38,7 +38,7 @@ def test_commit_changes(temp_dir, git_repo):
     assert git_repo.status() == {'.dot_file7': 128}
     commit_changes(1, 0)
     assert git_repo.status() == {}
-    assert git_repo.head.peel().message == 'Links(A1|R0) | File Changes'
+    assert git_repo.head.peel().message == 'Links(A1|R0) | Files(A1|R0|M0)'
 
     os.unlink(str(temp_dir / 'dot_file4'))
     (temp_dir / '.dot_file3').symlink_to(temp_dir / 'dotfiles' / 'dot_dir' / '.dot_file3')
@@ -57,5 +57,5 @@ def test_update(temp_dir, git_repo):
     assert os.path.islink(str(temp_dir / '.dot_file2'))
     update()
     assert not os.path.islink(str(temp_dir / '.dot_file2'))
-    assert git_repo.head.peel().message == 'Links(A1|R1) | File Changes'
+    assert git_repo.head.peel().message == 'Links(A1|R1) | Files(A2|R0|M0)'
     (temp_dir / '.dot_file2').symlink_to(temp_dir / 'dotfiles' / '.dot_file2')
