@@ -59,3 +59,21 @@ def test_update(temp_dir, git_repo):
     assert not os.path.islink(str(temp_dir / '.dot_file2'))
     assert git_repo.head.peel().message == 'Links(A1|R1) | Files(A2|R0|M0)'
     (temp_dir / '.dot_file2').symlink_to(temp_dir / 'dotfiles' / '.dot_file2')
+
+def test_update_flags(temp_dir, git_repo):
+    assert git_repo.head.peel().message == 'Links(A1|R1) | Files(A2|R0|M0)'
+    (temp_dir / 'dotfiles' / '.dot_file9').touch()
+    update(commit=False)
+    assert git_repo.head.peel().message == 'Links(A1|R1) | Files(A2|R0|M0)'
+    assert git_repo.status() == {'.dot_file9': 128}
+    assert os.path.islink(str(temp_dir / '.dot_file9'))
+
+    with open(temp_dir / 'dotfiles' / '.doty_config' / '.dotyignore', 'a') as f:
+        f.write('\n.dot_file9')
+
+    (temp_dir / 'dotfiles' / '.dot_file10').touch()
+    update(dry_run=True)
+    assert git_repo.head.peel().message == 'Links(A1|R1) | Files(A2|R0|M0)'
+    assert git_repo.status() == {'.dot_file9': 128, '.dot_file10': 128, '.doty_config/.dotyignore': 256}
+    assert not os.path.islink(str(temp_dir / '.dot_file10'))
+    assert os.path.islink(str(temp_dir / '.dot_file9'))

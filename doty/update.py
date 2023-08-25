@@ -23,8 +23,6 @@ def unlink_files(dotfiles: list) -> None:
 def commit_changes(links: int, unlinks: int) -> None:
     """Commit changes to the repo"""
     repo = get_repo()
-    # repo_status = repo.status()
-    # file_changes = ' | File Changes' if repo_status else ''
     message = f'Links(A{links}|R{unlinks})' + parse_status(repo)
     logger.debug(f'Committing changes: {message}')
     make_commit(repo, message)
