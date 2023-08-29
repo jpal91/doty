@@ -1,6 +1,7 @@
 import os
 from classes.DotyLogger import DotyLogger
 from helpers.git import make_commit
+from helpers.utils import move_file
 
 logger = DotyLogger()
 
@@ -144,6 +145,14 @@ def add(entry_name: str = '', src: str = '', dst = '', no_git: bool = False, no_
             exit(1)
     else:
         dst_path = get_dst(name, check=not force)
+
+    if not force and not double_check(f'{src_path} -> {dst_path}', 'Create Doty Entry'):
+        logger.warning('##byellow##Aborting...')
+        exit(0)
+    else:
+        logger.info('##bgreen##Adding##end## ##bwhite##Dotfile Entry')
+    
+    move_file(src_path, dst_path)
     
     linked = not no_link
 
