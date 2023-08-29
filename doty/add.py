@@ -1,11 +1,13 @@
 import os
-from update import update
+import logging
+# from update import update
 # from classes.DotyLogger import DotyLogger
-from helpers.logger import init_dotylogger
+# from helpers.logger import init_dotylogger
 from helpers.utils import move_file
 
 # logger = DotyLogger()
-logger = init_dotylogger()
+# logger = init_dotylogger()
+logger = logging.getLogger('doty')
 
 # DOTFILES_PATH = os.environ['DOTFILES_PATH']
 
@@ -168,7 +170,11 @@ def add(entry_name: str = '', src: str = '', dst = '', no_git: bool = False, no_
 
     if not no_git:
         logger.info('##bwhite##Adding to git repo')
-        update
+        # update
 
 if __name__ == '__main__':
-    get_name()
+    logger = logging.getLogger('doty')
+    logger.info('Test1')
+    logger = DotyLogger()
+    logger = logging.getLogger('doty')
+    logger.warning('##byellow##Test2')

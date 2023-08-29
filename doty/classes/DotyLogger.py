@@ -1,7 +1,40 @@
 import os
 import re
 import logging
-from typing import Any
+
+class DotyFilter(logging.Filter):
+    bblue = '\033[1;34m'
+    bwhite = '\033[1;37m'
+    green = '\033[0;32m'
+    yellow = '\033[0;33m'
+    byellow = '\033[1;33m'
+    bred = '\033[1;31m'
+    bmagenta = '\033[1;35m'
+    bgreen = '\033[1;32m'
+    end = '\033[0m'
+
+    def __init__(self, color: bool = True):
+        super().__init__()
+        self.color = color
+
+    def filter_color(self, msg: str) -> str:
+        match = re.findall(r'##([a-z]+)##', msg)
+
+        if not match:
+            return msg
+        
+        for color in match:
+            if self.color:
+                msg = msg.replace(f'##{color}##', self.__getattribute__(color))
+            else:
+                msg = msg.replace(f'##{color}##', '')
+
+        return msg + self.end
+    
+    def filter(self, record) -> bool:
+        # print(record)
+        record.msg = self.filter_color(record.msg)
+        return True
 
 class CustomFileLogFormatter(logging.Formatter):
     bblue = '\033[1;34m'
@@ -72,6 +105,10 @@ class DotyLogger:
 
         self.color = color
 
+        self.filter = DotyFilter(self.color)
+
+        self.logger.addFilter(self.filter)
+
         if file_logging:
             self.file_handler = logging.FileHandler(os.path.join(os.environ['HOME'], 'dotfiles', '.doty_config', 'doty.log'))
             self.file_handler.setLevel(logging.DEBUG)
@@ -131,9 +168,16 @@ class DotyLogger:
 
 if __name__ == '__main__':
     logger = DotyLogger(color=False)
-    logger.info('Normal logger - test')
-    logger.debug('Normal logger - test')
-    logger.info('##bblue##Custom logger - test##end##')
-    logger.set_debug()
-    logger.info('Debug logger - test')
-    logger.debug('Debug logger - test')
+    # logger.info('Normal logger - test')
+    # logger.debug('Normal logger - test')
+    # logger.info('##bblue##Custom logger - test##end##')
+    # logger.set_debug()
+    # logger.info('Debug logger - test')
+    # logger.debug('Debug logger - test')
+    logger.warning('Test Warning')
+    # logger = logging.getLogger('doty')
+    # logger.info('Test1')
+    # dl = DotyLogger()
+    # logger = logging.getLogger('doty')
+    # logger.info('Test2')
+    
