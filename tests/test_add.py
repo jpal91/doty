@@ -1,7 +1,7 @@
 import os
 import pytest
 import signal
-from doty.add import get_user_input, double_check, get_name, get_src, find_src, get_dst
+from doty.add import get_user_input, double_check, get_name, get_src, find_src, get_dst, add_doty_ignore
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -125,5 +125,18 @@ def test_get_dst(temp_dir, input, error, expected, monkeypatch, capfd):
     name = get_dst('.good_entry1', check=False)
     err = capfd.readouterr().err
     assert name == str(temp_dir / 'dotfiles' / expected)
-    err = err.replace('\x1b[1;37mEnter the destination path of the dotfile (or leave blank for default .good_entry1):\x1b[0m\n', '')
+    # err = err.replace('\x1b[1;37mEnter the destination path of the dotfile (or leave blank for default .good_entry1):\x1b[0m\n', '')
     assert err ==  error
+
+def test_add_doty_ignore(temp_dir):
+    dotyignore_path = temp_dir / 'dotfiles' / '.doty_config' / '.dotyignore'
+
+    with open(dotyignore_path, 'w') as f:
+        f.write('')
+
+    add_doty_ignore('.ignore_entry')
+
+    with open(dotyignore_path, 'r') as f:
+        current = f.readlines()
+    
+    assert current == ['.ignore_entry\n']

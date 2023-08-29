@@ -1,9 +1,11 @@
 import os
-from classes.DotyLogger import DotyLogger
-from helpers.git import make_commit
+from update import update
+# from classes.DotyLogger import DotyLogger
+from helpers.logger import init_dotylogger
 from helpers.utils import move_file
 
-logger = DotyLogger()
+# logger = DotyLogger()
+logger = init_dotylogger()
 
 # DOTFILES_PATH = os.environ['DOTFILES_PATH']
 
@@ -103,8 +105,8 @@ def get_dst(name: str, check: bool = True) -> str:
     dotfiles_dir = os.environ['DOTFILES_PATH']
 
     while not dst:
-        logger.info(f'##bwhite##Enter the destination path of the dotfile (or leave blank for default {name}):')
-        user_input = get_user_input(f'{dotfiles_dir}/')
+        # logger.info(f'##bwhite##Enter the destination path of the dotfile (or leave blank for default {name}):')
+        user_input = get_user_input(f'##bwhite##Enter the destination path of the dotfile (or leave blank for default {name}):\n{dotfiles_dir}/')
 
         if not user_input:
             user_input = name
@@ -117,6 +119,11 @@ def get_dst(name: str, check: bool = True) -> str:
             dst = ''
     
     return dst
+
+def add_doty_ignore(name: str) -> None:
+    dotyignore_path = os.path.join(os.environ['DOTFILES_PATH'], '.doty_config', '.dotyignore')
+    with open(dotyignore_path, 'a') as f:
+        f.write(f'{name}\n')
 
 def add(entry_name: str = '', src: str = '', dst = '', no_git: bool = False, no_link: bool = False, force: bool = False) -> None:
     if force:
@@ -156,5 +163,12 @@ def add(entry_name: str = '', src: str = '', dst = '', no_git: bool = False, no_
     
     linked = not no_link
 
+    if not linked:
+        add_doty_ignore(os.path.basename(dst_path))
+
     if not no_git:
         logger.info('##bwhite##Adding to git repo')
+        update
+
+if __name__ == '__main__':
+    get_name()

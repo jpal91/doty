@@ -1,9 +1,11 @@
 import os
-from classes.DotyLogger import DotyLogger
+# from classes.DotyLogger import DotyLogger
+from helpers.logger import init_dotylogger
 from helpers.discover import discover
 from helpers.git import make_commit, get_repo, parse_status
 
-logger = DotyLogger()
+# logger = DotyLogger()
+logger = init_dotylogger()
 
 def link_new_files(dotfiles: list) -> None:
     """Link new files in the repo"""

@@ -92,7 +92,7 @@ class DotyLogger:
         self.handler.setLevel(logging.INFO)
     
     def set_quiet(self) -> None:
-        self.handler.setLevel(logging.ERROR)
+        self.handler.setLevel(logging.WARNING)
     
     def filter_color(self, msg: str) -> str:
         match = re.findall(r'##([a-z]+)##', msg)
