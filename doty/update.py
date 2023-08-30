@@ -27,11 +27,11 @@ def commit_changes(links: int, unlinks: int) -> None:
     logger.debug(f'Committing changes: {message}')
     make_commit(repo, message)
 
-def update(commit: bool = True, suppress_color: bool = False, dry_run: bool = False):
+def update(commit: bool = True, quiet: bool = False, dry_run: bool = False):
     """Detect changes in the repo"""
 
-    if suppress_color:
-        logger.set_color(False)
+    if quiet:
+        logger.set_quiet()
 
     logger.info('##bblue##Discovering changes and updating Dotfiles Repo\n')
     links, unlinks = discover()
@@ -57,6 +57,3 @@ def update(commit: bool = True, suppress_color: bool = False, dry_run: bool = Fa
     if commit:
         logger.info('##bwhite##Committing changes')
         commit_changes(len(links), len(unlinks))
-
-if __name__ == '__main__':
-    update(suppress_color=True, dry_run=True)

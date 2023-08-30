@@ -122,7 +122,10 @@ def add_doty_ignore(name: str) -> None:
     with open(dotyignore_path, 'a') as f:
         f.write(f'{name}\n')
 
-def add(entry_name: str = '', src: str = '', dst = '', no_git: bool = False, no_link: bool = False, force: bool = False) -> None:
+def get_confirm_str(name: str, src: str, dst: str, linked: str) -> str:
+    return f'\n##bwhite##Name: {name}\n##bwhite##Source: {src}\n##bwhite##Destination: {dst}\n##bwhite##Linked: {linked}\n'
+
+def add(entry_name: str = '', src: str = '', dst = '', no_git: bool = False, no_link: bool = False, force: bool = False) -> dict:
     if force:
         logger.set_quiet()
     logger.info('##bwhite##Adding Dotfile\nType EXIT or press Ctrl+C to exit at any time.\n')
@@ -162,9 +165,27 @@ def add(entry_name: str = '', src: str = '', dst = '', no_git: bool = False, no_
 
     if not linked:
         add_doty_ignore(os.path.basename(dst_path))
+    
+    if force or (not force and double_check(get_confirm_str(name, src_path, dst_path, linked), 'Confirm Doty Entry')):
+        logger.info('##bgreen##Adding##end## ##bwhite##Dotfile Entry')
+    else:
+        logger.warning('##byellow##Aborting...')
+        exit(0)
 
     if not no_git:
         logger.info('##bwhite##Adding to git repo')
-        # update
+        update(quiet=True)
+    else:
+        logger.info('##byellow##Skipping git repo update')
+        update(commit=False, quiet=True)
+    
+    logger.info('##bgreen##Done')
+
+    return {
+        'name': name,
+        'src': src_path,
+        'dst': dst_path,
+        'linked': linked,
+    }
 
 

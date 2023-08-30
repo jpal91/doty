@@ -1,14 +1,12 @@
 import os
 import pytest
 import signal
-from doty.add import get_user_input, double_check, get_name, get_src, find_src, get_dst, add_doty_ignore
-from doty.classes.DotyLogger import DotyLogger
+from doty.add import get_user_input, double_check, get_name, get_src, find_src, get_dst, add_doty_ignore, get_confirm_str, add
 
 
 @pytest.fixture(scope="module", autouse=True)
 def setup(temp_dir, dummy_files):
     os.environ.update({"HOME": str(temp_dir), "DOTFILES_PATH": str(temp_dir / "dotfiles")})
-    # logger = DotyLogger()
 
 
 @pytest.mark.parametrize("input", ["test", "test2", "test3", ""])
@@ -78,6 +76,7 @@ def test_get_name(monkeypatch, capfd):
 def test_find_src(temp_dir, input, error):
     home = temp_dir
     
+    # If error is true, the src is bad and is expected to fail and return an empty string
     if error:
         src = find_src(input)
         assert src == ""
@@ -92,16 +91,16 @@ def test_find_src(temp_dir, input, error):
         (
             ["", ".good_entry1"],
             "\033[1;31mSource path cannot be empty, please try again.\033[0m\n",
-        ),
-        ([".good_entry1"], ""),
+        ), # Tests error on no input, then valid input
+        ([".good_entry1"], ""), # Tests valid input
         (
             ['.bad_entry1', '.good_entry1'],
             "\033[1;31mSource path does not exist, please try again.\033[0m\n",
-        ),
+        ), # Tests error on bad input, then valid input
         (
             ['dotfiles/.dot_file1', '.good_entry1'],
             "\033[1;31mSource path cannot be in dotfiles directory, please try again.\033[0m\n",
-        )
+        ) # Tests error on input being in dotfiles directory, then valid input
     ],
 )
 def test_get_src(temp_dir, input, expected, monkeypatch, capfd):
@@ -115,10 +114,10 @@ def test_get_src(temp_dir, input, expected, monkeypatch, capfd):
 @pytest.mark.parametrize(
     "input,expected,error",
     [
-        ('', '.good_entry1', ''),
-        ('test', 'test', ''),
+        ('', '.good_entry1', ''), # Test user not inputing any name, which defaults the file path to the same as 'name'
+        ('test', 'test', ''), # Tests user input which will set path same to user input
         ('dotfiles/.dot_file1', 'dotfiles/.dot_file1', ''),
-        (['.dot_file1', '.dot_file1.alt'], '.dot_file1.alt', '\033[1;31mDestination path already exists, please try again.\033[0m\n'),
+        (['.dot_file1', '.dot_file1.alt'], '.dot_file1.alt', '\033[1;31mDestination path already exists, please try again.\033[0m\n'), # Tests path already existing error
     ],
 )
 def test_get_dst(temp_dir, input, error, expected, monkeypatch, capfd):
@@ -127,7 +126,6 @@ def test_get_dst(temp_dir, input, error, expected, monkeypatch, capfd):
     name = get_dst('.good_entry1', check=False)
     err = capfd.readouterr().err
     assert name == str(temp_dir / 'dotfiles' / expected)
-    # err = err.replace('\x1b[1;37mEnter the destination path of the dotfile (or leave blank for default .good_entry1):\x1b[0m\n', '')
     assert err ==  error
 
 def test_add_doty_ignore(temp_dir):
@@ -142,3 +140,96 @@ def test_add_doty_ignore(temp_dir):
         current = f.readlines()
     
     assert current == ['.ignore_entry\n']
+
+def test_get_confirm_str(temp_dir):
+    name = 'test'
+    src = str(temp_dir / '.dot_file1')
+    dst = str(temp_dir / 'dotfiles' / '.dot_file1')
+    linked = 'False'
+
+    expected = f'\n##bwhite##Name: {name}\n##bwhite##Source: {src}\n##bwhite##Destination: {dst}\n##bwhite##Linked: {linked}\n'
+
+    assert get_confirm_str(name, src, dst, linked) == expected
+
+@pytest.mark.parametrize(
+    'keyargs,expected',
+    [
+        ({ 'entry_name': '.good_entry1', 'src': '.good_entry1', 'dst': '.good_entry1' }, 'COMPLETE'),
+        ({ 'entry_name': '.good_entry1', 'src': '.good_entry1', 'dst': '.good_entry1', 'force': True }, 'COMPLETE'),
+        ({ 'entry_name': '.good_entry1', 'src': '', 'dst': '.good_entry1', 'no_link': False }, 'COMPLETE'),
+        ({ 'entry_name': '', 'src': '.good_entry1', 'dst': '.good_entry1', 'no_link': True }, 'COMPLETE'),
+        ({ 'entry_name': '.good_entry1', 'src': '.good_entry1', 'dst': '' }, 'COMPLETE'),
+        ({ 'entry_name': '', 'src': '', 'dst': '', 'no_link': False }, 'COMPLETE'),
+        ({ 'entry_name': '.bad_entry1', 'src': '', 'dst': '.bad_entry1' }, 'EXIT1'),
+        ({ 'entry_name': '.bad_entry1', 'src': '.bad_entry1', 'dst': '' }, 'EXIT1'),
+        ({ 'entry_name': '.good_entry1', 'src': '.good_entry1', 'dst': '.good_entry1' }, 'EXIT0'),
+        ({ 'entry_name': '.good_entry1', 'src': '.good_entry1', 'dst': '.good_entry1' }, 'EXIT00'),
+    ]
+)
+def test_add(temp_dir, keyargs, expected, monkeypatch):
+    monkeypatch.setattr('doty.add.move_file', lambda *_: None)
+    monkeypatch.setattr('doty.add.update', lambda **_: None)
+    
+    # Tests multiple kwargs to add which will result in a entry being succesfully added
+    if expected == 'COMPLETE':
+        monkeypatch.setattr('doty.add.double_check', lambda *_: True)
+        name, src, dst = '.good_entry1', str(temp_dir / '.good_entry1'), str(temp_dir / 'dotfiles' / '.good_entry1')
+        linked = not keyargs['no_link'] if 'no_link' in keyargs else True
+
+        if not keyargs['entry_name']:
+            monkeypatch.setattr('doty.add.get_name', lambda **_: name)
+        
+        if not keyargs['src']:
+            monkeypatch.setattr('doty.add.get_src', lambda **_: src)
+        
+        if not keyargs['dst']:
+            monkeypatch.setattr('doty.add.get_dst', lambda *_, **__: dst)
+        
+        res = add(**keyargs)
+
+        assert res['name'] == name
+        assert res['src'] == src
+        assert res['dst'] == dst
+        assert res['linked'] == linked
+    
+    # Tests instances where the function would exit with a code of 1
+    # Specifically when a user inputs a bad src or dst
+    elif expected == 'EXIT1':
+        monkeypatch.setattr('doty.add.double_check', lambda *_: True)
+
+        if not keyargs['src']:
+            monkeypatch.setattr('doty.add.get_src', lambda **_: '')
+            monkeypatch.setattr('doty.add.check_dst', lambda *_: '')
+        
+        if not keyargs['dst']:
+            monkeypatch.setattr('doty.add.get_dst', lambda *_, **__: '')
+            monkeypatch.setattr('doty.add.find_src', lambda *_: '')
+
+        with pytest.raises(SystemExit) as exit:
+            add(**keyargs)
+        
+        assert exit.type == SystemExit
+        assert exit.value.code == 1
+
+    # Tests instances where the function would exit with a code of 0
+    # Specifically when a user aborts the process by not confirming 'y' to the double_check confirmation
+    elif expected == 'EXIT0':
+        monkeypatch.setattr('builtins.input', lambda _: 'n')
+
+        with pytest.raises(SystemExit) as exit:
+            add(**keyargs)
+        
+        assert exit.type == SystemExit
+        assert exit.value.code == 0
+    
+    # Same as EXIT0 but exits on the second instance of double_check when the user is asked to confirm
+    #   the entire entry looks correct, after get_confirm_str is called
+    elif expected == 'EXIT00':
+        inp = iter(['', 'n'])
+        monkeypatch.setattr('builtins.input', lambda _: next(inp))
+
+        with pytest.raises(SystemExit) as exit:
+            add(**keyargs)
+        
+        assert exit.type == SystemExit
+        assert exit.value.code == 0
