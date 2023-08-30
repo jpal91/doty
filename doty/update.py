@@ -27,7 +27,7 @@ def commit_changes(links: int, unlinks: int) -> None:
     logger.debug(f'Committing changes: {message}')
     make_commit(repo, message)
 
-def update(commit: bool = True, quiet: bool = False, dry_run: bool = False):
+def update(commit: bool = os.getenv('GIT_AUTO_COMMIT', True), quiet: bool = False, dry_run: bool = False):
     """Detect changes in the repo"""
 
     if quiet:
@@ -58,3 +58,7 @@ def update(commit: bool = True, quiet: bool = False, dry_run: bool = False):
     if commit:
         logger.info('##bwhite##Committing changes')
         commit_changes(len(links), len(unlinks))
+
+    # Resetting in case quiet was called from another function
+    if quiet:
+        logger.set_info()
