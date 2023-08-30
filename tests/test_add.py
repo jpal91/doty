@@ -6,7 +6,7 @@ from doty.add import get_user_input, double_check, get_name, get_src, find_src, 
 
 @pytest.fixture(scope="module", autouse=True)
 def setup(temp_dir, dummy_files):
-    os.environ.update({"HOME": str(temp_dir), "DOTFILES_PATH": str(temp_dir / "dotfiles")})
+    os.environ.update({"HOME": str(temp_dir), "DOTFILES_PATH": str(temp_dir / "dotfiles"), 'GIT_AUTO_COMMIT': 'false' })
 
 
 @pytest.mark.parametrize("input", ["test", "test2", "test3", ""])
@@ -68,7 +68,7 @@ def test_get_name(monkeypatch, capfd):
         ("f", True),
         ("test", True),
         ("/tmp/dotytmp/dotfiles/.good_entry1", True),
-        ('dotfiles/.dot_file1', False),
+        ('dotfiles/.dot_file1', True),
         (".good_entry2", False),
         (".good_entry3", False),
         ("~/.good_entry4", False),
@@ -120,7 +120,8 @@ def test_get_src(temp_dir, input, expected, monkeypatch, capfd):
         ('.good_entry1', False), # Tests valid input
         ('bash/.good_entry1', False),
         ('~/dotfiles/.good_entry1', False),
-        ('/home/user', False), # Still technically ok - will end up being $HOME/dotfiles/home/user
+        ('home/user', False),
+        ('/home/user', True), # Tests bad input, path is absolute and not in dotfiles directory
         ('.dot_file1', True), # Tests bad input, path exists
     ]
 )
@@ -170,7 +171,7 @@ def test_get_confirm_str(temp_dir):
     dst = str(temp_dir / 'dotfiles' / '.dot_file1')
     linked = 'False'
 
-    expected = f'\n##bwhite##Name: {name}\n##bwhite##Source: {src}\n##bwhite##Destination: {dst}\n##bwhite##Linked: {linked}\n'
+    expected = f'\n\n\033[1;34mName:\033[0m  \033[1;37m{name}\n\033[1;34mSource:\033[0m  \033[1;37m{src}\n\033[1;34mDestination:\033[0m  \033[1;37m{dst}\n\033[1;34mLinked:\033[0m  \033[1;37m{linked}\n'
 
     assert get_confirm_str(name, src, dst, linked) == expected
 
@@ -186,10 +187,11 @@ def test_get_confirm_str(temp_dir):
         ({ 'entry_name': '.bad_entry1', 'src': '', 'dst': '.bad_entry1' }, 'EXIT1'),
         ({ 'entry_name': '.bad_entry1', 'src': '.bad_entry1', 'dst': '' }, 'EXIT1'),
         ({ 'entry_name': '.good_entry1', 'src': '.good_entry1', 'dst': '.good_entry1' }, 'EXIT0'),
-        ({ 'entry_name': '.good_entry1', 'src': '.good_entry1', 'dst': '.good_entry1' }, 'EXIT00'),
+        ({ 'entry_name': '.good_entry1', 'dst': '.good_entry1' }, 'EXIT00'),
+        ({ 'entry_name': '.good_entry1', 'src': '.good_entry1', 'dst': '.good_entry1' }, 'EXIT000'),
     ]
 )
-def test_add(temp_dir, keyargs, expected, monkeypatch):
+def test_add(temp_dir, tmp_path_factory, keyargs, expected, monkeypatch):
     monkeypatch.setattr('doty.add.move_file', lambda *_: None)
     monkeypatch.setattr('doty.add.update', lambda **_: None)
     
@@ -245,10 +247,23 @@ def test_add(temp_dir, keyargs, expected, monkeypatch):
         assert exit.type == SystemExit
         assert exit.value.code == 0
     
+    
+    elif expected == 'EXIT00':
+        non_home = tmp_path_factory.mktemp('non-home-dir')
+        (non_home / '.good_entry1').touch()
+        inp = iter(['', 'n'])
+        monkeypatch.setattr('builtins.input', lambda _: next(inp))
+
+        with pytest.raises(SystemExit) as exit:
+            add(**keyargs, src=str(non_home / '.good_entry1'))
+        
+        assert exit.type == SystemExit
+        assert exit.value.code == 0
+
     # Same as EXIT0 but exits on the second instance of double_check when the user is asked to confirm
     #   the entire entry looks correct, after get_confirm_str is called
-    elif expected == 'EXIT00':
-        inp = iter(['', 'n'])
+    elif expected == 'EXIT000':
+        inp = iter(['', '', 'n'])
         monkeypatch.setattr('builtins.input', lambda _: next(inp))
 
         with pytest.raises(SystemExit) as exit:

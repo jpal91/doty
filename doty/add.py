@@ -55,6 +55,7 @@ def find_src(src: str) -> str:
     """Helps confirm src given by user is accurate and exists, returns empty string if not. 
     Assumes file is in the users home directory if no absolute path is given"""
     home = os.environ['HOME']
+    dotfiles_dir = os.environ['DOTFILES_PATH']
 
     if not os.path.isabs(src):
         real_path = os.path.realpath(os.path.expanduser(src))
@@ -65,6 +66,10 @@ def find_src(src: str) -> str:
             src = real_path
 
     if not os.path.exists(src):
+        logger.warning('##bred##Source path does not exist, please try again.')
+        return ''
+    elif dotfiles_dir in src:
+        logger.warning('##bred##Source path cannot be in dotfiles directory, please try again.')
         return ''
     
     return src
@@ -78,7 +83,6 @@ def get_src(check: bool = True) -> str:
         3. The user has input a path that is in the dotfiles directory
     """
     src = ''
-    dotfiles_dir = os.environ['DOTFILES_PATH']
 
     while not src:
         user_input = get_user_input('Enter the source path of the dotfile: ')
@@ -89,13 +93,8 @@ def get_src(check: bool = True) -> str:
 
         src = find_src(user_input)
 
-        if dotfiles_dir in src:
-            logger.warning('##bred##Source path cannot be in dotfiles directory, please try again.')
-            src = ''
-            continue
-
         if not src:
-            logger.warning('##bred##Source path does not exist, please try again.')
+            continue
         elif check and not double_check(src, 'Source Path'):
             src = ''
         else:
@@ -106,15 +105,23 @@ def get_src(check: bool = True) -> str:
 def check_dst(input: str) -> str:
     """Checks if the destination path exists, returns empty string if it does."""
     dotfiles_dir = os.environ['DOTFILES_PATH']
+    
+    if os.path.isabs(input) and not input.startswith(dotfiles_dir):
+        logger.error('##bred##Destination path not in dotfiles directory, please try again...')
+        return ''
+
     real_path = os.path.realpath(os.path.expanduser(input))
 
     if real_path.startswith(dotfiles_dir):
         dst = real_path
     else:
-        dst = os.path.join(dotfiles_dir, input)
+        dst = os.path.realpath(os.path.join(dotfiles_dir, input))
     
     if os.path.exists(dst):
-        logger.warning('##bred##Destination path already exists, please try again.')
+        logger.error('##bred##Destination path already exists, please try again.')
+        return ''
+    elif not dst.startswith(dotfiles_dir):
+        logger.error('##bred##Destination path not in dotfiles directory, please try again...')
         return ''
     else:
         return dst
@@ -181,7 +188,6 @@ def add(entry_name: str = '', src: str = '', dst = '', no_git: bool = False, no_
         src_path = find_src(src)
 
         if not src_path:
-            logger.error('##bred##Source path does not exist, aborting...')
             exit(1)
     else:
         src_path = get_src(check=not force)
@@ -191,7 +197,6 @@ def add(entry_name: str = '', src: str = '', dst = '', no_git: bool = False, no_
         dst_path = check_dst(dst)
 
         if not dst_path:
-            logger.error('##bred##Destination path already exists, aborting...')
             exit(1)
     else:
         dst_path = get_dst(name, check=not force)
@@ -200,8 +205,6 @@ def add(entry_name: str = '', src: str = '', dst = '', no_git: bool = False, no_
     if not force and not double_check(f'{src_path} -> {dst_path}', 'Create Doty Entry'):
         logger.warning('##byellow##Aborting...')
         exit(0)
-    else:
-        logger.info('##bgreen##Adding##end## ##bwhite##Dotfile Entry')
     
     # Checks if the user wants to link the file back to their home directory
     linked = not no_link
@@ -210,7 +213,13 @@ def add(entry_name: str = '', src: str = '', dst = '', no_git: bool = False, no_
     if not linked:
         add_doty_ignore(os.path.basename(dst_path))
     
-    # Second check that will show the full entry and ask user to confirm if the information is accurate
+    # Second check that cannot be skipped, asks user to confirm they are ok with moving a file that is not in their home directory
+    # This prevents accidental moving of important system files to the dotfiles directory
+    if not src.startswith(os.environ['HOME']) and not double_check('Source path is \033[1;31mnot in your home directory\033[0m, \033[1;37mare you sure you want to continue?', 'Source Path'):
+        logger.warning('##byellow##Aborting...')
+        exit(0)
+
+    # Third check that will show the full entry and ask user to confirm if the information is accurate
     # Skipped if force is True
     if force or (not force and double_check(get_confirm_str(name, src_path, dst_path, linked), 'Confirm Doty Entry')):
         logger.info('##bgreen##Adding##end## ##bwhite##Dotfile Entry')
