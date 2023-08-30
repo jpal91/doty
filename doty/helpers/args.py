@@ -13,7 +13,7 @@ def main_args() -> ArgumentParser:
     parser = ArgumentParser()
     subparser = parser.add_subparsers(dest='command')
 
-    parser_update = subparser.add_parser('update', help='Update doty lock file', aliases=['up'])
+    parser_update = subparser.add_parser('update', help='Update doty directory', aliases=['up'])
     parser_update.add_argument('-C', '--no-commit', help='Do not commit changes to the git repo', action='store_true', dest='no_commit', default=False)
     parser_update.add_argument('-q', '--quiet', help='Suppress output', action='store_true', dest='quiet', default=False)
     parser_update.add_argument('-d', '--dry-run', help='Only output changes to be made, but do not make changes. Overrides quiet.', action='store_true', dest='dry_run', default=False)
