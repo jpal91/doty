@@ -30,6 +30,9 @@ def commit_changes(links: int, unlinks: int) -> None:
 def update(commit: bool = os.getenv('GIT_AUTO_COMMIT', True), quiet: bool = False, dry_run: bool = False):
     """Detect changes in the repo"""
 
+    if dry_run:
+        quiet = False
+
     if quiet:
         logger.set_quiet()
 
