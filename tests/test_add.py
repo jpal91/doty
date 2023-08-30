@@ -263,7 +263,7 @@ def test_add(temp_dir, tmp_path_factory, keyargs, expected, monkeypatch):
     # Same as EXIT0 but exits on the second instance of double_check when the user is asked to confirm
     #   the entire entry looks correct, after get_confirm_str is called
     elif expected == 'EXIT000':
-        inp = iter(['', '', 'n'])
+        inp = iter(['', 'n'])
         monkeypatch.setattr('builtins.input', lambda _: next(inp))
 
         with pytest.raises(SystemExit) as exit:

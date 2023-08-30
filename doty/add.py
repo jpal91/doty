@@ -16,6 +16,8 @@ def get_user_input(prompt: str) -> str:
     if user_input == 'EXIT':
         logger.debug('User input was EXIT')
         exit(0)
+    else:
+        logger.debug(f'User input = {user_input}')
     
     return user_input
 
@@ -31,8 +33,10 @@ def double_check(val: str, item_type: str) -> bool:
         logger.debug('User input was EXIT')
         exit(0)
     elif not user_input or user_input.lower() == 'y':
+        logger.debug(f'User confirms check - {item_type} = {val}')
         return True
     else:
+        logger.debug(f'User declines check - {item_type} = {val}')
         return False
 
 def get_name(check: bool = True) -> str:
@@ -49,6 +53,7 @@ def get_name(check: bool = True) -> str:
         else:
             break
     
+    logger.debug(f'Entry name - {name}')
     return name
 
 def find_src(src: str) -> str:
@@ -56,6 +61,7 @@ def find_src(src: str) -> str:
     Assumes file is in the users home directory if no absolute path is given"""
     home = os.environ['HOME']
     dotfiles_dir = os.environ['DOTFILES_PATH']
+    logger.debug(f'Original input src - {src}')
 
     if not os.path.isabs(src):
         real_path = os.path.realpath(os.path.expanduser(src))
@@ -72,6 +78,7 @@ def find_src(src: str) -> str:
         logger.warning('##bred##Source path cannot be in dotfiles directory, please try again.')
         return ''
     
+    logger.debug(f'Found src - {src}')
     return src
 
 def get_src(check: bool = True) -> str:
@@ -100,11 +107,13 @@ def get_src(check: bool = True) -> str:
         else:
             break
 
+    logger.debug(f'Source path - {src}')
     return src
 
 def check_dst(input: str) -> str:
     """Checks if the destination path exists, returns empty string if it does."""
     dotfiles_dir = os.environ['DOTFILES_PATH']
+    logger.debug(f'Original input dst - {input}')
     
     if os.path.isabs(input) and not input.startswith(dotfiles_dir):
         logger.error('##bred##Destination path not in dotfiles directory, please try again...')
@@ -124,6 +133,7 @@ def check_dst(input: str) -> str:
         logger.error('##bred##Destination path not in dotfiles directory, please try again...')
         return ''
     else:
+        logger.debug(f'Found dst - {dst}')
         return dst
 
 def get_dst(name: str, check: bool = True) -> str:
@@ -144,6 +154,7 @@ def get_dst(name: str, check: bool = True) -> str:
         if check and not double_check(dst, 'Destination Path'):
             dst = ''
     
+    logger.debug(f'Destination path - {dst}')
     return dst
 
 def add_doty_ignore(name: str) -> None:
@@ -173,6 +184,7 @@ def add(entry_name: str = '', src: str = '', dst = '', no_git: bool = False, no_
     """
     # Force limits the amount of logging
     if force:
+        logger.debug('Force flag set')
         logger.set_quiet()
 
     logger.info('\n##bblue##Adding Dotfile##end##\n##bwhite##Type EXIT or press Ctrl+C to exit at any time.\n')
@@ -182,7 +194,7 @@ def add(entry_name: str = '', src: str = '', dst = '', no_git: bool = False, no_
         name = entry_name
     else:
         name = get_name(check=not force)
-    
+
     # Gets source path from user or uses the one provided
     if src:
         src_path = find_src(src)
@@ -215,7 +227,7 @@ def add(entry_name: str = '', src: str = '', dst = '', no_git: bool = False, no_
     
     # Second check that cannot be skipped, asks user to confirm they are ok with moving a file that is not in their home directory
     # This prevents accidental moving of important system files to the dotfiles directory
-    if not src.startswith(os.environ['HOME']) and not double_check('Source path is \033[1;31mnot in your home directory\033[0m, \033[1;37mare you sure you want to continue?', 'Source Path'):
+    if not src_path.startswith(os.environ['HOME']) and not double_check('Source path is \033[1;31mnot in your home directory\033[0m, \033[1;37mare you sure you want to continue?', 'Source Path'):
         logger.warning('##byellow##Aborting...')
         exit(0)
 
@@ -229,6 +241,7 @@ def add(entry_name: str = '', src: str = '', dst = '', no_git: bool = False, no_
 
     # Moves file from source path to destination path
     move_file(src_path, dst_path)
+    logger.debug('File moved')
 
     # Updates git repo or not depending on no_git flag
     # Even if the user does not want to update the repo, update is still ran in case the user wants to link the file back
@@ -241,11 +254,15 @@ def add(entry_name: str = '', src: str = '', dst = '', no_git: bool = False, no_
     
     logger.info('##bgreen##Done')
 
-    return {
+    entry = {
         'name': name,
         'src': src_path,
         'dst': dst_path,
         'linked': linked,
     }
+
+    logger.debug(f'Final Entry - {entry}')
+
+    return entry
 
 
