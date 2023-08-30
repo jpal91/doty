@@ -1,15 +1,10 @@
 import os
 import logging
-# from update import update
-# from classes.DotyLogger import DotyLogger
-# from helpers.logger import init_dotylogger
+from update import update
+from classes.DotyLogger import DotyLogger
 from helpers.utils import move_file
 
-# logger = DotyLogger()
-# logger = init_dotylogger()
-logger = logging.getLogger('doty')
-
-# DOTFILES_PATH = os.environ['DOTFILES_PATH']
+logger = DotyLogger()
 
 def get_user_input(prompt: str) -> str:
     try:
@@ -172,9 +167,4 @@ def add(entry_name: str = '', src: str = '', dst = '', no_git: bool = False, no_
         logger.info('##bwhite##Adding to git repo')
         # update
 
-if __name__ == '__main__':
-    logger = logging.getLogger('doty')
-    logger.info('Test1')
-    logger = DotyLogger()
-    logger = logging.getLogger('doty')
-    logger.warning('##byellow##Test2')
+

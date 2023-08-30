@@ -8,7 +8,7 @@ from doty.classes.DotyLogger import DotyLogger
 @pytest.fixture(scope="module", autouse=True)
 def setup(temp_dir, dummy_files):
     os.environ.update({"HOME": str(temp_dir), "DOTFILES_PATH": str(temp_dir / "dotfiles")})
-    logger = DotyLogger()
+    # logger = DotyLogger()
 
 
 @pytest.mark.parametrize("input", ["test", "test2", "test3", ""])
