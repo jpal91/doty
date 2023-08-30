@@ -1,7 +1,7 @@
 import os
 
 def find_all_dotfiles() -> list:
-    """Find all dotfiles in the user's home directory."""
+    """Find all dotfiles in the user's dotfile directory."""
     dot_dir = os.path.join(os.environ['HOME'], 'dotfiles')
     dotfiles = []
 
