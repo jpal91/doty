@@ -2,6 +2,7 @@ import os
 import pytest
 import pygit2
 
+
 @pytest.fixture(scope="session")
 def temp_dir(tmp_path_factory):
     home = tmp_path_factory.mktemp('dotytmp')
@@ -11,6 +12,10 @@ def temp_dir(tmp_path_factory):
     doty_config.mkdir()
     doty_lock = doty_config / 'doty_lock.yml'
     doty_lock.touch()
+    gitignore = dotfiles / '.gitignore'
+
+    with open(gitignore, 'w') as f:
+        f.write('doty.log')
 
     for i in range(5):
         entry = home / f'.good_entry{i}'
@@ -18,6 +23,13 @@ def temp_dir(tmp_path_factory):
 
     # os.environ.update({"HOME": str(temp_dir), "DOTFILES_PATH": str(temp_dir / "dotfiles")})
     return home
+
+# @pytest.fixture(scope='session')
+# def env(temp_dir, monkeypatch):
+#     monkeypatch.setenv('HOME', str(temp_dir))
+#     monkeypatch.setenv('DOTFILES_PATH', str(temp_dir / 'dotfiles'))
+#     monkeypatch.setenv('DOTY_LOG_PATH', str(temp_dir / 'dotfiles' / '.doty_config' / 'doty.log'))
+#     yield
 
 @pytest.fixture(scope='module')
 def git_repo(temp_dir):

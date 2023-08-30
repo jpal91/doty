@@ -43,6 +43,7 @@ def update(commit: bool = True, quiet: bool = False, dry_run: bool = False):
         return
 
     if links:
+        print(links)
         logger.info(f'##bgreen##Linking##end## ##bwhite##{len(links)} new files')
         link_new_files(links)
     

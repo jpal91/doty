@@ -1,12 +1,15 @@
 import os
 import pytest
 from doty.update import link_new_files, unlink_files, commit_changes, update
-from doty.classes.DotyLogger import DotyLogger
+# from doty.classes.DotyLogger import DotyLogger
 
 @pytest.fixture(scope='module', autouse=True)
 def setup(temp_dir, dummy_files):
     os.environ.update({'HOME': str(temp_dir)})
-    logger = DotyLogger()
+    # logger = DotyLogger()
+    # monkeypatch.setenv('HOME', str(temp_dir))
+    # monkeypatch.setenv('DOTFILES_PATH', str(temp_dir / 'dotfiles'))
+    # monkeypatch.setenv('DOTY_LOG_PATH', str(temp_dir / 'dotfiles' / '.doty_config' / 'doty.log'))
 
 def test_link_new_files(temp_dir):
     df_links = [str(temp_dir / 'dotfiles' / 'dot_dir' / 'dot_file4')]

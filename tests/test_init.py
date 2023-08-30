@@ -22,6 +22,7 @@ def test_gen_dotyrc(setup):
         'GIT_AUTO_COMMIT=true',
         'GIT_AUTHOR_NAME="doty"',
         'GIT_AUTHOR_EMAIL="doty@email.com"',
+        'DOTY_FILE_LOGGING=true',
         f'DOTY_LOG_PATH="{dotfiles_path}/.doty_config/doty.log"',
         'DOTY_COLOR_LOGGING=true'
     ]
@@ -44,6 +45,7 @@ def test_init(setup, temp_init, monkeypatch):
     doty_lock_path = doty_config_dir / 'doty_lock.yml'
     dotyrc_path = doty_config_dir / 'dotyrc'
     dotyignore_path = doty_config_dir / '.dotyignore'
+    gitignore_path = dotfiles_path / '.gitignore'
 
     assert os.path.exists(dotfiles_path)
     assert os.path.isdir(dotfiles_path)
@@ -55,6 +57,7 @@ def test_init(setup, temp_init, monkeypatch):
     assert os.path.isfile(dotyrc_path)
     assert os.path.exists(dotyignore_path)
     assert os.path.isfile(dotyignore_path)
+    assert os.path.exists(gitignore_path)
 
     with open(doty_lock_path, 'r') as doty_lock:
         assert doty_lock.readline() == '# Path: ~/.doty_config/doty_lock.yml\n'

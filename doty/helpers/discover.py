@@ -13,6 +13,8 @@ def find_all_dotfiles() -> list:
             dirs.remove('.git')
 
         for file in files:
+            if file == '.gitignore':
+                continue
             dotfiles.append(os.path.join(root, file))
     return dotfiles
 

@@ -39,6 +39,7 @@ def test_find_all_dotfiles(temp_dir):
     assert str(dot_dir / 'dot_dir' / '.dot_file3') in dotfiles
     assert str(dot_dir / 'dot_dir' / 'dot_file4') in dotfiles
     assert str(dot_dir / '.dot_file5') not in dotfiles
+    assert str(dot_dir / '.gitignore') not in dotfiles
 
 def test_find_all_links(temp_dir):
     dotfiles = find_all_dotfiles()
