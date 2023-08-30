@@ -22,7 +22,7 @@ def get_user_input(prompt: str) -> str:
 def double_check(val: str, item_type: str) -> bool:
     """Helper function to ask user to double check their input and confirm it's correct when check is True"""
     try:
-        user_input = input(f'\033[1;33mPlease confirm: \033[1;37m{item_type} = {val} (Y/n)\033[0m')
+        user_input = input(f'\033[1;33mPlease confirm: \033[1;37m{item_type} = {val} (Y/n)\033[0m ')
     except KeyboardInterrupt:
         logger.debug('KeyboardInterrupt')
         exit(0)
@@ -125,7 +125,7 @@ def get_dst(name: str, check: bool = True) -> str:
     dotfiles_dir = os.environ['DOTFILES_PATH']
 
     while not dst:
-        user_input = get_user_input(f'##bwhite##Enter the destination path of the dotfile (or leave blank for default {name}):\n{dotfiles_dir}/')
+        user_input = get_user_input(f'Enter the destination path of the dotfile (or leave blank for default {name}):\n{dotfiles_dir}/')
 
         if not user_input:
             user_input = name
@@ -147,7 +147,7 @@ def add_doty_ignore(name: str) -> None:
 
 def get_confirm_str(name: str, src: str, dst: str, linked: str) -> str:
     """Helper function to get the confirmation string sent to the user's console to confirm accuracy of entry"""
-    return f'\n##bwhite##Name: {name}\n##bwhite##Source: {src}\n##bwhite##Destination: {dst}\n##bwhite##Linked: {linked}\n'
+    return f'\n\n\033[1;34mName:\033[0m  \033[1;37m{name}\n\033[1;34mSource:\033[0m  \033[1;37m{src}\n\033[1;34mDestination:\033[0m  \033[1;37m{dst}\n\033[1;34mLinked:\033[0m  \033[1;37m{linked}\n'
 
 def add(entry_name: str = '', src: str = '', dst = '', no_git: bool = False, no_link: bool = False, force: bool = False) -> dict:
     """Main function to add a new dotfile entry to the dotfiles repo. Takes user's command line inputs and queries for any missing info
@@ -168,7 +168,7 @@ def add(entry_name: str = '', src: str = '', dst = '', no_git: bool = False, no_
     if force:
         logger.set_quiet()
 
-    logger.info('##bwhite##Adding Dotfile\nType EXIT or press Ctrl+C to exit at any time.\n')
+    logger.info('\n##bblue##Adding Dotfile##end##\n##bwhite##Type EXIT or press Ctrl+C to exit at any time.\n')
 
     # Gets entry name from user or uses the one provided
     if entry_name:
@@ -224,7 +224,7 @@ def add(entry_name: str = '', src: str = '', dst = '', no_git: bool = False, no_
     # Updates git repo or not depending on no_git flag
     # Even if the user does not want to update the repo, update is still ran in case the user wants to link the file back
     if not no_git:
-        logger.info('##bwhite##Adding to git repo')
+        logger.info('##bgreen##Adding##end## ##bwhite##to git repo')
         update(quiet=True)
     else:
         logger.info('##byellow##Skipping git repo update')

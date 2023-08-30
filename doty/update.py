@@ -36,7 +36,7 @@ def update(commit: bool = os.getenv('GIT_AUTO_COMMIT', True), quiet: bool = Fals
     if quiet:
         logger.set_quiet()
 
-    logger.info('##bblue##Discovering changes and updating Dotfiles Repo\n')
+    logger.info('\n##bblue##Discovering changes and updating Dotfiles Repo\n')
     links, unlinks = discover()
 
     if dry_run:
@@ -46,7 +46,6 @@ def update(commit: bool = os.getenv('GIT_AUTO_COMMIT', True), quiet: bool = Fals
         return
 
     if links:
-        print(links)
         logger.info(f'##bgreen##Linking##end## ##bwhite##{len(links)} new files')
         link_new_files(links)
     
