@@ -1,7 +1,7 @@
 import os
 import pytest
 import signal
-from doty.add import get_user_input, double_check, get_name, get_src, find_src, get_dst, add_doty_ignore, get_confirm_str, add
+from doty.add import get_user_input, double_check, get_name, get_src, find_src, check_dst, get_dst, add_doty_ignore, get_confirm_str, add
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -113,6 +113,26 @@ def test_get_src(temp_dir, input, expected, monkeypatch, capfd):
     err = capfd.readouterr().err
     assert name == str(temp_dir / ".good_entry1")
     assert err == expected
+
+@pytest.mark.parametrize(
+    "input,error",
+    [
+        ('.good_entry1', False), # Tests valid input
+        ('bash/.good_entry1', False),
+        ('~/dotfiles/.good_entry1', False),
+        ('/home/user', False), # Still technically ok - will end up being $HOME/dotfiles/home/user
+        ('.dot_file1', True), # Tests bad input, path exists
+    ]
+)
+def test_check_dst(temp_dir, input, error):
+    if error:
+        dst = check_dst(input)
+        assert dst == ''
+    else:
+        dst = check_dst(input)
+        if input.startswith('~/dotfiles/'):
+            input = input.replace('~/dotfiles/', '')
+        assert dst == str(temp_dir / 'dotfiles' / input)
 
 @pytest.mark.parametrize(
     "input,expected,error",

@@ -106,7 +106,12 @@ def get_src(check: bool = True) -> str:
 def check_dst(input: str) -> str:
     """Checks if the destination path exists, returns empty string if it does."""
     dotfiles_dir = os.environ['DOTFILES_PATH']
-    dst = os.path.join(dotfiles_dir, input)
+    real_path = os.path.realpath(os.path.expanduser(input))
+
+    if real_path.startswith(dotfiles_dir):
+        dst = real_path
+    else:
+        dst = os.path.join(dotfiles_dir, input)
     
     if os.path.exists(dst):
         logger.warning('##bred##Destination path already exists, please try again.')
