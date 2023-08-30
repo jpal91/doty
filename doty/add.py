@@ -53,12 +53,17 @@ def get_name(check: bool = True) -> str:
 
 def find_src(src: str) -> str:
     """Helps confirm src given by user is accurate and exists, returns empty string if not. 
-    Assumes file is in the users home directory if no path is given"""
+    Assumes file is in the users home directory if no absolute path is given"""
     home = os.environ['HOME']
 
-    if not os.path.exists(src) and not src.startswith(home):
-        src = os.path.join(home, src)
-    
+    if not os.path.isabs(src):
+        real_path = os.path.realpath(os.path.expanduser(src))
+
+        if not os.path.exists(real_path):
+            src = os.path.join(home, src)
+        else:
+            src = real_path
+
     if not os.path.exists(src):
         return ''
     
