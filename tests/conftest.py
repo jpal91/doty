@@ -59,6 +59,10 @@ def dummy_files(temp_dir):
     (temp_dir / '.dot_file3').symlink_to(dotfiles / 'dot_dir' / '.dot_file3')
     (temp_dir / '.dot_file5').touch()
     
+    for i in range(5):
+        entry = temp_dir / f'.good_entry{i}'
+        entry.touch()
+
     yield
 
     # Cleanup all created files

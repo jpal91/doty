@@ -34,3 +34,23 @@ def make_commit(repo: Repository, message: str) -> str:
     commit = repo.create_commit(ref, author_commiter, author_commiter, message, tree, parent)
 
     return commit
+
+def prior_commit_hex(repo: Repository) -> str:
+    head_commit = repo[repo.head.target]
+    return head_commit.hex
+
+def last_commit_file(file_name: str) -> str:
+    repo = get_repo()
+
+    last_commit = repo[prior_commit_hex(repo)]
+    
+    try:
+        file = last_commit.tree[file_name].data.decode('utf-8')
+    except KeyError:
+        file = ''
+
+    return file
+    
+
+if __name__ == '__main__':
+    print(last_commit_file('bash/.bashrc.1'))
