@@ -21,12 +21,16 @@ class ShortReport:
     
     def __str__(self):
         string = f"""\
+            
             ##bgreen##Added##end## Files: {len(self.add_files)} Links: {len(self.add_links)}
             ##bred##Removed##end## Files: {len(self.rm_files)} Links: {len(self.rm_links)}
             ##bblue##Updated##end## Files: {len(self.up_files)} Links: {len(self.up_links)}
-        
         """
         return textwrap.dedent(string)
+    
+    @property
+    def changes(self) -> bool:
+        return any([self.add_files, self.rm_files, self.up_files, self.add_links, self.rm_links, self.up_links])
 
     def add_file(self, name: str) -> None:
         if name in self.rm_files:

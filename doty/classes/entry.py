@@ -1,6 +1,6 @@
 import os
 import textwrap
-from doty.classes.logger import DotyLogger
+from classes.logger import DotyLogger
 
 logger = DotyLogger()
 

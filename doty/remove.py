@@ -1,7 +1,7 @@
 import os
 import shutil
 from update import update
-from doty.classes.logger import DotyLogger
+from classes.logger import DotyLogger
 from helpers.discover import find_all_dotfiles, find_all_links
 
 logger = DotyLogger()

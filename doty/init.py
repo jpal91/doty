@@ -1,6 +1,6 @@
 import os
 import pygit2
-from doty.classes.logger import DotyLogger
+from classes.logger import DotyLogger
 from helpers.args import init_args
 
 logger = DotyLogger(file_logging=False)

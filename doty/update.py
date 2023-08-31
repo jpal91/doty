@@ -1,5 +1,5 @@
 import os
-from doty.classes.logger import DotyLogger
+from classes.logger import DotyLogger
 from helpers.discover import discover
 from helpers.git import make_commit, get_repo, parse_status
 from helpers.lock import compare_lock_yaml
@@ -79,9 +79,12 @@ def update(commit: bool = os.getenv('GIT_AUTO_COMMIT', True), quiet: bool = Fals
 
     report = compare_lock_yaml()
 
-    logger.info(report)
+    if report.changes:
+        logger.info(str(report))
+    else:
+        logger.info('##bgreen##No changes detected')
 
-    if commit:
+    if commit and report.changes:
         logger.info('##bwhite##Committing changes')
         repo = get_repo()
         git_report = report.gen_git_report()
