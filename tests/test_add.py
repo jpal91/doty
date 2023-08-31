@@ -88,6 +88,6 @@ def test_get_dst(temp_dir: Path, monkeypatch):
     src = get_dst(name)
     assert src == str(temp_dir / 'dotfiles' / 'config/test')
 
-    monkeypatch.setattr('builtins.input', lambda _: '~/test1')
+    monkeypatch.setattr('builtins.input', lambda _: 'test1')
     src = get_dst(name)
-    assert src == str(temp_dir / 'test1')
+    assert src == str(temp_dir / 'dotfiles' / 'test1')

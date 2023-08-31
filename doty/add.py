@@ -173,7 +173,6 @@ def add(entry_name: str = '', src: str = '', dst: str = '', link_name: str = '',
         logger.warning('##byellow##Aborting...')
         exit(0)
 
-
     # Updates git repo or not depending on no_git flag
     # Even if the user does not want to update the repo, update is still ran in case the user wants to link the file back
     if not no_git and os.environ['GIT_AUTO_COMMIT']:
