@@ -18,10 +18,10 @@ class DotyEntry:
         self.extrapolate()
 
     def __eq__(self, other) -> bool:
-        return self.__dict__ == other.__dict__
+        return self.dict == other.dict
     
     def __contains__(self, other) -> bool:
-        return self.__dict__ == other.__dict__
+        return self.dict == other.dict
 
     def __str__(self) -> str:
         string = f"""\
@@ -34,9 +34,16 @@ class DotyEntry:
         """
         return textwrap.dedent(string)
     
-    def get_vals(self) -> dict:
+    @property
+    def dict(self) -> dict:
         """Return the values of the entry."""
-        return self.__dict__
+        return {
+            'name': self.name,
+            'src': self.src,
+            'dst': self.dst,
+            'linked': self.linked,
+            'link_name': self.link_name
+        }
     
     def extrapolate(self) -> None:
         """Fill in the missing values of the entry."""
@@ -61,7 +68,7 @@ class DotyEntry:
             logger.debug(f'Adding link_name for {self.name}')
             self.link_name = self.name
         
-        logger.debug(f'Extrapolated entry: {self.name} - {self.__dict__}')
+        logger.debug(f'Extrapolated entry: {self.name} - {self.dict}')
 
 if __name__ == '__main__':
     dict1 = { 'name': 'bashrc', 'src': '/home/user/bashrc', 'dst': '/home/user/dotfiles/bashrc', 'linked': True, 'link_name': 'bashrc' }
