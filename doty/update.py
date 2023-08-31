@@ -2,6 +2,7 @@ import os
 from doty.classes.logger import DotyLogger
 from helpers.discover import discover
 from helpers.git import make_commit, get_repo, parse_status
+from helpers.lock import compare_lock_yaml
 
 logger = DotyLogger()
 
@@ -27,7 +28,7 @@ def commit_changes(links: int, unlinks: int) -> None:
     logger.debug(f'Committing changes: {message}')
     make_commit(repo, message)
 
-def update(commit: bool = os.getenv('GIT_AUTO_COMMIT', True), quiet: bool = False, dry_run: bool = False):
+def _update(commit: bool = os.getenv('GIT_AUTO_COMMIT', True), quiet: bool = False, dry_run: bool = False):
     """Detect changes in the repo"""
 
     if dry_run:
@@ -64,3 +65,24 @@ def update(commit: bool = os.getenv('GIT_AUTO_COMMIT', True), quiet: bool = Fals
     # Resetting in case quiet was called from another function
     if quiet:
         logger.set_info()
+
+def update(commit: bool = os.getenv('GIT_AUTO_COMMIT', True), quiet: bool = False, dry_run: bool = False):
+    """Detect changes in the repo"""
+
+    # if dry_run:
+    #     quiet = False
+
+    if quiet:
+        logger.set_quiet()
+
+    logger.info('\n##bblue##Discovering changes and updating Dotfiles Repo\n')
+
+    report = compare_lock_yaml()
+
+    logger.info(report)
+
+    if commit:
+        logger.info('##bwhite##Committing changes')
+        repo = get_repo()
+        git_report = report.gen_git_report()
+        make_commit(repo, git_report)

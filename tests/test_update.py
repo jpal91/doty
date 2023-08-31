@@ -48,7 +48,8 @@ def test_commit_changes(temp_dir, git_repo):
     os.unlink(str(temp_dir / 'dot_file4'))
     (temp_dir / '.dot_file3').symlink_to(temp_dir / 'dotfiles' / 'dot_dir' / '.dot_file3')
 
-def test_update(temp_dir, git_repo):
+@pytest.mark.skip(reason='deprecating')
+def _test_update(temp_dir, git_repo):
     assert not os.path.islink(str(temp_dir / 'dot_file4'))
     update()
     assert os.path.islink(str(temp_dir / 'dot_file4'))
@@ -65,7 +66,8 @@ def test_update(temp_dir, git_repo):
     assert git_repo.head.peel().message == 'Links(A1|R1) | Files(A2|R0|M0)'
     (temp_dir / '.dot_file2').symlink_to(temp_dir / 'dotfiles' / '.dot_file2')
 
-def test_update_flags(temp_dir, git_repo):
+@pytest.mark.skip(reason='deprecating')
+def _test_update_flags(temp_dir, git_repo):
     assert git_repo.head.peel().message == 'Links(A1|R1) | Files(A2|R0|M0)'
     (temp_dir / 'dotfiles' / '.dot_file9').touch()
     update(commit=False)

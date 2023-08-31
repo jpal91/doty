@@ -4,7 +4,8 @@ import yaml
 from helpers.git import last_commit_file
 from helpers.utils import load_lock_file, write_lock_file, move_file
 from classes.entry import DotyEntry
-from doty.classes.logger import DotyLogger
+from classes.logger import DotyLogger
+from classes.report import ShortReport
 
 logger = DotyLogger()
 
@@ -41,7 +42,7 @@ def get_lock_file_diff(current_entries: list[DotyEntry], prior_entries: list[Dot
 
     return diff_current, diff_prior
 
-def handle_prior_lock_changes(lock_changes: list[DotyEntry]) -> None:
+def handle_prior_lock_changes(lock_changes: list[DotyEntry], report: ShortReport = None) -> None:
     """
     Handles any changes from prior locked entries by undoing the changes.
         If there are any symlinks, these will be unlinked. Then the file in the dotfiles
@@ -61,6 +62,9 @@ def handle_prior_lock_changes(lock_changes: list[DotyEntry]) -> None:
             if os.path.islink(link_path):
                 logger.debug(f'Unlinking {entry.link_name}')
                 os.unlink(link_path)
+
+                if report:
+                    report.rm_link(entry.link_name)
         
         # Verify the file exists in the dotfiles directory
         if not os.path.exists(entry.dst):
@@ -75,7 +79,10 @@ def handle_prior_lock_changes(lock_changes: list[DotyEntry]) -> None:
         logger.debug(f'Moving {entry.dst} to {entry.src}')
         shutil.move(entry.dst, entry.src)
 
-def handle_current_lock_changes(lock_changes: list[DotyEntry]) -> None:
+        if report:
+            report.rm_file(entry.name)
+
+def handle_current_lock_changes(lock_changes: list[DotyEntry], report: ShortReport = None) -> None:
     """Handles changes to the new lock file by creating symlinks for the new entries
         and moving files to the dotfiles directory.
     """
@@ -99,6 +106,9 @@ def handle_current_lock_changes(lock_changes: list[DotyEntry]) -> None:
         logger.debug(f'Moving {entry.src} to {entry.dst}')
         move_file(entry.src, entry.dst)
 
+        if report:
+            report.add_file(entry.name)
+
         # Handle linking
         if entry.linked:
             linked_name = os.path.join(os.path.split(entry.src)[0], entry.link_name)
@@ -112,11 +122,19 @@ def handle_current_lock_changes(lock_changes: list[DotyEntry]) -> None:
             logger.debug(f'Linking {entry.dst} to {linked_name}')
             os.symlink(entry.dst, linked_name)
 
+            if report:
+                report.add_link(entry.link_name)
 
-def compare_lock_yaml() -> None:
+
+def compare_lock_yaml(report: bool = True) -> ShortReport:
     """Compare the doty_lock.yml file with the prior yml file"""
     doty_lock_path = os.path.join(os.environ['DOTFILES_PATH'], '.doty_config', 'doty_lock.yml')
     prior_yaml, current_yaml = get_lock_files(doty_lock_path)
+
+    if report:
+        report = ShortReport()
+    else:
+        report = None
     
     # Converts yaml into list of DotyEntry objects
     prior_entries = [DotyEntry(entry) for entry in prior_yaml]
@@ -126,13 +144,13 @@ def compare_lock_yaml() -> None:
     diff_current, diff_prior = get_lock_file_diff(current_entries, prior_entries)
 
     # Handle any changes from prior locked entries
-    handle_prior_lock_changes(diff_prior)
+    handle_prior_lock_changes(diff_prior, report=report)
 
     # Handle any changes to the new lock file
-    handle_current_lock_changes(diff_current)
+    handle_current_lock_changes(diff_current, report=report)
 
     # Write current entries to lock file
     new_yaml = [entry.get_vals() for entry in current_entries]
     write_lock_file(new_yaml, doty_lock_path)
 
-    
+    return report
