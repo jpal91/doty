@@ -17,6 +17,19 @@ def move_file(src, dst):
         else:
             return os.path.exists(dst)
 
+def move_out(dst, src):
+    """Move files out of dotfiles directory"""
+
+    # Move file
+    shutil.move(dst, src)
+
+    # Remove any empty directories left behind
+    dir_path = os.path.dirname(dst)
+    try:
+        os.removedirs(dir_path)
+    except OSError:
+        pass
+
 def load_lock_file(path: str) -> list:
     """Load the doty_lock.yml file."""
     with open(path, 'r') as f:

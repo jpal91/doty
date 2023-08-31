@@ -2,7 +2,7 @@ import os
 import shutil
 import yaml
 from helpers.git import last_commit_file
-from helpers.utils import load_lock_file, write_lock_file, move_file
+from helpers.utils import load_lock_file, write_lock_file, move_file, move_out
 from classes.entry import DotyEntry
 from classes.logger import DotyLogger
 from classes.report import ShortReport
@@ -89,7 +89,8 @@ def handle_prior_lock_changes(
             continue
 
         logger.debug(f"Moving {entry.dst} to {entry.src}")
-        shutil.move(entry.dst, entry.src)
+        # shutil.move(entry.dst, entry.src)
+        move_out(entry.dst, entry.src)
 
         if report:
             report.rm_file(entry.name)

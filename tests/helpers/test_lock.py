@@ -196,6 +196,28 @@ def test_handle_prior_lock_changes(temp_dir: Path, capfd):
     assert not os.path.isfile(temp_dir / "dotfiles" / ".good_entry1")
     assert os.path.isfile(temp_dir / ".good_entry1")
 
+    # Test regular functionality with deep nested dst directory
+    os.makedirs(temp_dir / "dotfiles" / "nest1" / "nest2")
+    (temp_dir / ".good_entry1").rename(temp_dir / 'dotfiles' / 'nest1' / 'nest2' / '.good_entry1')
+    (temp_dir / ".good_entry_unique").symlink_to(temp_dir / "dotfiles" / "nest1" / "nest2" / ".good_entry1")
+    lock_changes = [
+        DotyEntry(
+            {"name": ".good_entry1", "linked": True, 'dst': str(temp_dir / "dotfiles" / "nest1" / "nest2" / ".good_entry1"), "link_name": ".good_entry_unique"}
+        )
+    ]
+    assert os.path.islink(temp_dir / ".good_entry_unique")
+    assert os.readlink(temp_dir / ".good_entry_unique") == str(temp_dir / "dotfiles" / "nest1" / "nest2" / ".good_entry1")
+    assert os.path.isdir(temp_dir / "dotfiles" / "nest1" / "nest2")
+    assert os.path.isfile(temp_dir / "dotfiles" / "nest1" / "nest2" / ".good_entry1")
+    handle_prior_lock_changes(lock_changes)
+    assert not os.path.islink(temp_dir / ".good_entry_unique")
+    assert not os.path.isfile(temp_dir / "dotfiles" / "nest1" / "nest2" / ".good_entry1")
+    assert os.path.isfile(temp_dir / ".good_entry1")
+    assert not os.path.isdir(temp_dir / "dotfiles" / "nest1" / "nest2")
+    assert not os.path.isdir(temp_dir / "dotfiles" / "nest1")
+    assert os.path.isdir(temp_dir / "dotfiles")
+
+
 
 def test_handle_current_lock_changes(temp_dir: Path, capfd):
     # Testing errors
