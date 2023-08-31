@@ -1,5 +1,5 @@
 import os
-from classes.DotyLogger import DotyLogger
+from doty.classes.logger import DotyLogger
 from helpers.discover import discover
 from helpers.git import make_commit, get_repo, parse_status
 

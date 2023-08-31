@@ -4,7 +4,7 @@ import yaml
 from helpers.git import last_commit_file
 from helpers.utils import load_lock_file, write_lock_file, move_file
 from classes.entry import DotyEntry
-from classes.DotyLogger import DotyLogger
+from doty.classes.logger import DotyLogger
 
 logger = DotyLogger()
 
@@ -95,7 +95,7 @@ def handle_current_lock_changes(lock_changes: list[DotyEntry]) -> None:
             continue
 
         # Move the file to the dotfiles directory
-        # Using special function to create directories if needed
+        # Using special move function to create directories if needed
         logger.debug(f'Moving {entry.src} to {entry.dst}')
         move_file(entry.src, entry.dst)
 

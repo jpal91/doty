@@ -1,6 +1,6 @@
 import os
 from update import update
-from classes.DotyLogger import DotyLogger
+from doty.classes.logger import DotyLogger
 from helpers.utils import move_file
 
 logger = DotyLogger()

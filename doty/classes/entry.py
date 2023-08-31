@@ -1,5 +1,5 @@
 import os
-from classes.DotyLogger import DotyLogger
+from doty.classes.logger import DotyLogger
 
 logger = DotyLogger()
 
