@@ -1,4 +1,5 @@
 import os
+import textwrap
 from doty.classes.logger import DotyLogger
 
 logger = DotyLogger()
@@ -21,6 +22,17 @@ class DotyEntry:
     
     def __contains__(self, other) -> bool:
         return self.__dict__ == other.__dict__
+
+    def __str__(self) -> str:
+        string = f"""\
+        ##bblue##Name: ##bwhite##{self.name}
+        ##bblue##Source: ##bwhite##{self.src}
+        ##bblue##Destination: ##bwhite##{self.dst}
+        ##bblue##Linked: ##bwhite##{self.linked}
+        ##bblue##Link Name: ##bwhite##{self.link_name}
+        
+        """
+        return textwrap.dedent(string)
     
     def get_vals(self) -> dict:
         """Return the values of the entry."""

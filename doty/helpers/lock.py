@@ -86,6 +86,7 @@ def handle_current_lock_changes(lock_changes: list[DotyEntry], report: ShortRepo
     """Handles changes to the new lock file by creating symlinks for the new entries
         and moving files to the dotfiles directory.
     """
+    dotfiles_dir = os.environ['DOTFILES_PATH']
     logger.debug('Handling current lock changes')
 
     for entry in lock_changes:
@@ -96,9 +97,14 @@ def handle_current_lock_changes(lock_changes: list[DotyEntry], report: ShortRepo
             logger.error(f'##bred##Error##end## ##bwhite##File {entry.name} - {entry.src} does not exist. Skipping...')
             continue
 
-        # Verify dst exists
+        # Verify dst does not exist
         if os.path.exists(entry.dst):
             logger.error(f'##bred##Error##end## ##bwhite##File {entry.name} - {entry.dst} already exists. Skipping...')
+            continue
+
+        # Verify destination is in the dotfiles directory
+        if not entry.dst.startswith(dotfiles_dir):
+            logger.error(f'##bred##Error##end## ##bwhite##File {entry.name} - {entry.dst} is not in the dotfiles directory. Skipping...')
             continue
 
         # Move the file to the dotfiles directory

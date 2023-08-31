@@ -205,6 +205,15 @@ def test_handle_current_lock_changes(temp_dir: Path, capfd):
     assert 'already exists' in err
     (temp_dir / 'dotfiles' / '.dot_file_new').unlink()
 
+    # Testing if the destination is not in the dotfiles directory
+    (temp_dir / '.dot_file_new').touch()
+    locked_entries = [DotyEntry({ 'name' : '.dot_file_new', 'dst': str(temp_dir / 'config' / '.dot_file_new'), 'linked': False })]
+    assert os.path.exists(temp_dir / '.dot_file_new')
+    handle_current_lock_changes(locked_entries)
+    err = capfd.readouterr().err
+    assert 'Error' in err
+    assert 'not in the dotfiles directory' in err
+
     # Testing if unique link_name already exists in Home directory
     # File will be moved but link won't be created
     locked_entries = [DotyEntry({ 'name' : '.dot_file_new', 'linked': True, 'link_name': '.good_entry0' })]
@@ -248,15 +257,15 @@ def test_handle_current_lock_changes(temp_dir: Path, capfd):
     (temp_dir / 'dotfiles' / '.dot_file_new').rename(temp_dir / '.dot_file_new')
 
     # Test regular functionality with different src, dst, and link_name
-    locked_entries = [DotyEntry({ 'name' : '.dot_file_new', 'src': f'{temp_dir}/.dot_file_new', 'dst': f'{temp_dir}/new-dot-dir/.dot_file_new_dst', 'linked': True, 'link_name': '.dot_file_new_unique' })]
+    locked_entries = [DotyEntry({ 'name' : '.dot_file_new', 'src': f'{temp_dir}/.dot_file_new', 'dst': f'{temp_dir}/dotfiles/new-dot-dir/.dot_file_new_dst', 'linked': True, 'link_name': '.dot_file_new_unique' })]
     assert os.path.exists(temp_dir / '.dot_file_new')
     assert not os.path.islink(temp_dir / '.dot_file_new')
-    assert not os.path.exists(temp_dir / 'new-dot-dir' / '.dot_file_new_dst')
+    assert not os.path.exists(temp_dir / 'dotfiles' / 'new-dot-dir' / '.dot_file_new_dst')
     assert not os.path.exists(temp_dir / '.dot_file_new_unique')
     handle_current_lock_changes(locked_entries)
     assert os.path.islink(temp_dir / '.dot_file_new_unique')
-    assert os.readlink(temp_dir / '.dot_file_new_unique') == str(temp_dir / 'new-dot-dir' / '.dot_file_new_dst')
-    assert os.path.exists(temp_dir / 'new-dot-dir' / '.dot_file_new_dst')
+    assert os.readlink(temp_dir / '.dot_file_new_unique') == str(temp_dir / 'dotfiles' / 'new-dot-dir' / '.dot_file_new_dst')
+    assert os.path.exists(temp_dir / 'dotfiles' / 'new-dot-dir' / '.dot_file_new_dst')
 
 def test_compare_lock_yaml(temp_dir: Path, git_repo, lock_file, capfd):
     paths = [
@@ -292,7 +301,7 @@ def test_compare_lock_yaml(temp_dir: Path, git_repo, lock_file, capfd):
     new_entry = {
         'name': '.bash_aliases',
         'src': f'{temp_dir}/.bash_aliases.original',
-        'dst': f'{temp_dir}/bash/.bash_aliases.1',
+        'dst': f'{temp_dir}/dotfiles/bash/.bash_aliases.1',
         'linked': True,
         'link_name': '.bash_aliases'
     }
@@ -306,7 +315,7 @@ def test_compare_lock_yaml(temp_dir: Path, git_repo, lock_file, capfd):
     assert not os.path.islink(temp_dir / '.zshrc_unique')
     assert os.path.exists(temp_dir / '.bash_aliases.original')
     assert not os.path.islink(temp_dir / '.bash_aliases')
-    assert not os.path.exists(temp_dir / 'bash' / '.bash_aliases.1')
+    assert not os.path.exists(temp_dir / 'dotfiles' / 'bash' / '.bash_aliases.1')
 
     entries = [DotyEntry(entry) for entry in new_file]
 
@@ -319,8 +328,8 @@ def test_compare_lock_yaml(temp_dir: Path, git_repo, lock_file, capfd):
     assert os.readlink(temp_dir / '.zshrc_unique') == str(temp_dir / 'dotfiles' / '.zshrc')
     assert not os.path.exists(temp_dir / '.bash_aliases.original')
     assert os.path.islink(temp_dir / '.bash_aliases')
-    assert os.readlink(temp_dir / '.bash_aliases') == str(temp_dir / 'bash' / '.bash_aliases.1')
-    assert os.path.exists(temp_dir / 'bash' / '.bash_aliases.1')
+    assert os.readlink(temp_dir / '.bash_aliases') == str(temp_dir / 'dotfiles' / 'bash' / '.bash_aliases.1')
+    assert os.path.exists(temp_dir / 'dotfiles' / 'bash' / '.bash_aliases.1')
 
     # Testing an edge case to make sure that the "linked" attribute is updated appropriately
     # with open(lock_file) as f:
