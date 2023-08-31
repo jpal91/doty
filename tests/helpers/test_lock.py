@@ -258,7 +258,7 @@ def test_handle_current_lock_changes(temp_dir: Path, capfd):
     assert os.readlink(temp_dir / '.dot_file_new_unique') == str(temp_dir / 'new-dot-dir' / '.dot_file_new_dst')
     assert os.path.exists(temp_dir / 'new-dot-dir' / '.dot_file_new_dst')
 
-def test_compare_lock_yaml(temp_dir: Path, git_repo, lock_file):
+def test_compare_lock_yaml(temp_dir: Path, git_repo, lock_file, capfd):
     paths = [
         (temp_dir / '.bashrc'),
         (temp_dir / '.zshrc'),
@@ -321,3 +321,28 @@ def test_compare_lock_yaml(temp_dir: Path, git_repo, lock_file):
     assert os.path.islink(temp_dir / '.bash_aliases')
     assert os.readlink(temp_dir / '.bash_aliases') == str(temp_dir / 'bash' / '.bash_aliases.1')
     assert os.path.exists(temp_dir / 'bash' / '.bash_aliases.1')
+
+    # Testing an edge case to make sure that the "linked" attribute is updated appropriately
+    # with open(lock_file) as f:
+    #     new_file = yaml.safe_load(f)
+    
+    # (temp_dir / '.dot_file_bad').touch()
+    # new_file.append({ 'name' : '.dot_file_bad', 'linked': True, 'link_name': '.good_entry0' })
+
+    # assert os.path.exists(temp_dir / '.dot_file_bad')
+    # assert os.path.exists(temp_dir / '.good_entry0')
+    # assert not os.path.islink(temp_dir / '.good_entry0')
+
+    # with open(lock_file, 'w') as f:
+    #     yaml.safe_dump(new_file, f, sort_keys=False)
+    
+    # compare_lock_yaml()
+    # err = capfd.readouterr().err
+    # assert 'Error' in err
+    # assert not os.path.islink(temp_dir / '.good_entry0')
+
+    # with open(lock_file) as f:
+    #     new_file = yaml.safe_load(f)
+    
+    # entry = [e for e in new_file if e['name'] == '.dot_file_bad'][0]
+    # assert entry['linked'] == False

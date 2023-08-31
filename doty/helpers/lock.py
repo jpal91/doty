@@ -106,6 +106,7 @@ def handle_current_lock_changes(lock_changes: list[DotyEntry]) -> None:
             # Verify there is no file or symlink matching link_name path to prevent overwriting
             if os.path.exists(linked_name) or os.path.islink(linked_name):
                 logger.error(f'##bred##Error##end## ##bwhite##File {entry.name} - {linked_name} already exists. Skipping...')
+                entry.linked = False
                 continue
 
             logger.debug(f'Linking {entry.dst} to {linked_name}')
