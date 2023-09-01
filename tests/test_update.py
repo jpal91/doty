@@ -6,10 +6,9 @@ from doty.update import link_new_files, unlink_files, commit_changes, update
 @pytest.fixture(scope='module', autouse=True)
 def setup(temp_dir, dummy_files):
     os.environ.update({'HOME': str(temp_dir), 'DOTFILES_PATH': str(temp_dir / 'dotfiles'), 'GIT_AUTO_COMMIT': 'false'})
-    # logger = DotyLogger()
-    # monkeypatch.setenv('HOME', str(temp_dir))
-    # monkeypatch.setenv('DOTFILES_PATH', str(temp_dir / 'dotfiles'))
-    # monkeypatch.setenv('DOTY_LOG_PATH', str(temp_dir / 'dotfiles' / '.doty_config' / 'doty.log'))
+    yield
+    with open(temp_dir / 'dotfiles' / '.doty_config' / 'doty_lock.yml', 'w') as f:
+        f.write('')
 
 def test_link_new_files(temp_dir):
     df_links = [str(temp_dir / 'dotfiles' / 'dot_dir' / 'dot_file4')]
