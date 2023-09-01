@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 import pytest
-from doty.remove import remove, remove_link, remove_file
+from doty.remove import remove, remove_link, remove_file, remove_multi
 from doty.update import update
 from doty.classes.entry import DotyEntry
 from doty.helpers.utils import write_lock_file
@@ -170,3 +170,57 @@ def test_remove(temp_dir: Path, monkeypatch):
     assert not os.path.islink(temp_dir / '.doty_rm5_unique')
     assert not os.path.exists(temp_dir / 'dotfiles' / '.doty_rm5')
     assert os.path.isfile(temp_dir / '.doty_rm5')
+
+def test_remove_multi(temp_dir: Path, monkeypatch, capfd):
+    files = [
+        (temp_dir / '.doty_rm6'),
+        (temp_dir / '.doty_rm7'),
+        (temp_dir / '.doty_rm8'),
+        (temp_dir / '.doty_rm9'),
+        (temp_dir / '.doty_rm10')
+    ]
+    [file.touch() for file in files]
+    doty_lock_path = temp_dir / 'dotfiles' / '.doty_config' / 'doty_lock.yml'
+
+    entries = [DotyEntry({ 'name': os.path.basename(file) }) for file in files]
+    # entries[1].dst = str(temp_dir / 'dotfiles' / 'nest1' / '.doty_rm2')
+    # entries[2].linked = False
+    # entries[4].link_name = '.doty_rm5_unique'
+    write_lock_file([e.dict for e in entries], doty_lock_path)
+    update(quiet=True)
+
+    assert all([os.path.islink(file) for file in files])
+
+    inp = iter(['y', 'y', 'n'])
+    monkeypatch.setattr('builtins.input', lambda _: next(inp))
+    remove_multi(['.doty_rm6', '.doty_rm7', '.doty_rm8'])
+    out = capfd.readouterr().err
+    assert 'Removed \x1b[1;37m.doty_rm6' in out
+    assert 'Removed \x1b[1;37m.doty_rm7' in out
+    assert 'Skipping .doty_rm8' in out
+    assert not os.path.islink(temp_dir / '.doty_rm6')
+    assert not os.path.islink(temp_dir / '.doty_rm7')
+    assert os.path.isfile(temp_dir / '.doty_rm6')
+    assert os.path.isfile(temp_dir / '.doty_rm7')
+    assert os.path.islink(temp_dir / '.doty_rm8')
+    assert not os.path.isfile(temp_dir / 'dotfiles' / '.doty_rm6')
+    assert not os.path.isfile(temp_dir / 'dotfiles' / '.doty_rm7')
+    assert os.path.isfile(temp_dir / 'dotfiles' / '.doty_rm8')
+
+    inp = iter(['y', 'y'])
+    monkeypatch.setattr('builtins.input', lambda _: next(inp))
+    remove_multi(['.doty_rm8', '.doty_rm9'], link_only=True)
+    out = capfd.readouterr().err
+    assert 'Removed \x1b[1;37mlink for .doty_rm8' in out
+    assert 'Removed \x1b[1;37mlink for .doty_rm9' in out
+    assert not os.path.islink(temp_dir / '.doty_rm8')
+    assert not os.path.islink(temp_dir / '.doty_rm9')
+    assert os.path.isfile(temp_dir / 'dotfiles' / '.doty_rm8')
+    assert os.path.isfile(temp_dir / 'dotfiles' / '.doty_rm9')
+
+    remove_multi(['.doty_rm10', 'no_exist'], force=True)
+    out = capfd.readouterr().err
+    assert not os.path.islink(temp_dir / '.doty_rm10')
+    assert os.path.isfile(temp_dir / '.doty_rm10')
+    assert 'Could not find dotfile no_exist' in out
+    assert 'Removed \x1b[1;37m.doty_rm10' in out

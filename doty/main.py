@@ -3,7 +3,7 @@ import subprocess
 from helpers.args import main_args
 from update import update
 from add import add
-from remove import remove
+from remove import remove, remove_multi
 
 def get_logs(num: int) -> None:
     """Show the git logs for the doty repo"""
@@ -27,7 +27,8 @@ if __name__ == '__main__':
         add(args.entry_name, args.src, args.dst, args.link_name, force=args.force, no_git=args.no_git, no_link=args.no_link)
     
     if args.command in ['remove', 'rm']:
-        remove(args.name, link_only=args.link, no_git=args.no_git, force=args.force)
+        remove_multi(args.names, link_only=args.link, no_git=args.no_git, force=args.force)
+        # remove(args.name, link_only=args.link, no_git=args.no_git, force=args.force)
     
     if args.command in ['edit', 'e']:
         if args.lock:

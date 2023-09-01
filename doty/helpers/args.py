@@ -37,7 +37,8 @@ def main_args() -> ArgumentParser:
     parser_add.add_argument('--no-link', help='Do not link the entry to the home directory', action='store_true', dest='no_link', default=False)
 
     parser_remove = subparser.add_parser('remove', help='Remove a doty entry', aliases=['rm'])
-    parser_remove.add_argument('name', help='Name of the entry to remove', type=str)
+    # parser_remove.add_argument('name', help='Name of the entry to remove', type=str)
+    parser_remove.add_argument('names', help='Name of the entry to remove', type=str, nargs='+')
     parser_remove.add_argument('-l', '--link-only', help='Remove only the link to the home directory', action='store_true', dest='link', default=False)
     parser_remove.add_argument('-f', help='Force the removal of the entry. Will still ask if there is missing input and will still show errors.', action='store_true', dest='force', default=False)
     parser_remove.add_argument('--no-git', help='Do not commit changes to the git repo', action='store_true', dest='no_git', default=False)

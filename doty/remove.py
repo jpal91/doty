@@ -98,3 +98,44 @@ def remove(name: str, link_only: bool = False, no_git: bool = False, force: bool
         update(commit=False, quiet=True)
 
     logger.info(f'\n##bgreen##Done##end##')
+
+def remove_multi(names: list, link_only: bool = False, no_git: bool = False, force: bool = False) -> None:
+    """Remove dotfiles from the repo"""
+    lock_path = os.path.join(os.environ['DOTFILES_PATH'], '.doty_config', 'doty_lock.yml')
+    yml = load_lock_file(lock_path)
+    rm_entries = []
+
+    for i, entry in enumerate(yml):
+        if not entry['name'] in names:
+            continue
+
+        del names[names.index(entry['name'])]
+
+        if not force:
+            confirm = input(f'\n\033[1;33mAre you sure you want to remove{" link" if link_only else ""}\033[0m \033[1;37m{entry["name"]}\033[1;33m from the dotfiles dir? (y/N)\033[0m ')
+
+            if confirm.lower() != 'y':
+                logger.info(f'##byellow##Skipping {entry["name"]}')
+                continue
+        
+        if link_only:
+            entry['linked'] = False
+            yml[i] = entry
+            logger.info(f'##bred##Removed ##bwhite##link for {entry["name"]}')
+        else:
+            rm_entries.append(entry)
+    
+    [logger.error(f'##byellow##Could not find dotfile {name}') for name in names]
+
+    for entry in rm_entries:
+        yml.remove(entry)
+        logger.info(f'##bred##Removed ##bwhite##{entry["name"]}')
+    
+    write_lock_file(yml, lock_path)
+    
+    if not no_git and os.environ['GIT_AUTO_COMMIT']:
+        update()
+    else:
+        update(commit=False, quiet=True)
+
+    logger.info(f'\n##bgreen##Done##end##')
