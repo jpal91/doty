@@ -7,6 +7,9 @@ from doty.add import get_user_input, double_check, get_name, get_dst, get_src, a
 @pytest.fixture(scope="module", autouse=True)
 def setup(temp_dir, dummy_files, git_repo):
     os.environ.update({"HOME": str(temp_dir), "DOTFILES_PATH": str(temp_dir / "dotfiles"), 'GIT_AUTO_COMMIT': 'false' })
+    yield
+    with open(temp_dir / 'dotfiles' / '.doty_config' / 'doty_lock.yml', 'w') as f:
+        f.write('')
 
 
 @pytest.mark.parametrize("input", ["test", "test2", "test3", ""])
