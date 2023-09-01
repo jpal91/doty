@@ -23,7 +23,7 @@ def test_gen_dotyrc(setup):
         'GIT_AUTHOR_NAME="doty"',
         'GIT_AUTHOR_EMAIL="doty@email.com"',
         'DOTY_FILE_LOGGING=true',
-        f'DOTY_LOG_PATH="{dotfiles_path}/.doty_config/doty.log"',
+        f'DOTY_LOG_PATH="{dotfiles_path}/.doty_config/logs/doty.log"',
         'DOTY_COLOR_LOGGING=true'
     ]
 
