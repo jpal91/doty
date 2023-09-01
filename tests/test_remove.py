@@ -1,10 +1,14 @@
 import os
+from pathlib import Path
 import pytest
 from doty.remove import remove, remove_link, remove_file
+from doty.update import update
+from doty.classes.entry import DotyEntry
+from doty.helpers.utils import write_lock_file
 
 @pytest.fixture(scope="module", autouse=True)
-def setup(temp_dir, dummy_files):
-    os.environ.update({"HOME": str(temp_dir), "DOTFILES_PATH": str(temp_dir / "dotfiles")})
+def setup(temp_dir, dummy_files, git_repo):
+    os.environ.update({"HOME": str(temp_dir), "DOTFILES_PATH": str(temp_dir / "dotfiles"), 'GIT_AUTO_COMMIT': 'false'})
     (temp_dir / 'dotfiles' / '.doty_lfile1').touch()
     (temp_dir / 'dotfiles' / '.doty_lfile2').touch()
     (temp_dir / 'dotfiles' / 'dot_dir' / '.doty_lfile3').touch()
@@ -70,7 +74,7 @@ def test_remove_file(temp_dir, input, error):
         assert not os.path.isfile(path)
         assert os.path.isfile(temp_dir / os.path.basename(input))
 
-def test_remove(temp_dir, monkeypatch):
+def _test_remove(temp_dir, monkeypatch):
     monkeypatch.setattr('doty.remove.update', lambda *args, **kwargs: None)
 
     with pytest.raises(SystemExit) as exit:
@@ -96,3 +100,59 @@ def test_remove(temp_dir, monkeypatch):
     
     assert exit.type == SystemExit
     assert exit.value.code == 0
+
+def test_remove(temp_dir: Path, monkeypatch):
+    files = [
+        (temp_dir / '.doty_rm1'),
+        (temp_dir / '.doty_rm2'),
+        (temp_dir / '.doty_rm3'),
+        (temp_dir / '.doty_rm4')
+    ]
+    [file.touch() for file in files]
+    doty_lock_path = temp_dir / 'dotfiles' / '.doty_config' / 'doty_lock.yml'
+
+    entries = [DotyEntry({ 'name': os.path.basename(file) }) for file in files]
+    entries[1].dst = str(temp_dir / 'dotfiles' / 'nest1' / '.doty_rm2')
+    entries[2].linked = False
+    write_lock_file([e.dict for e in entries], doty_lock_path)
+    update(quiet=True)
+
+    # Test exit code 3 == no entry found
+    with pytest.raises(SystemExit) as exit:
+        remove('no_exist')
+    
+    assert exit.type == SystemExit
+    assert exit.value.code == 3
+
+    # Test exit code 4 == user did not confirm
+    monkeypatch.setattr('builtins.input', lambda _: 'n')
+    with pytest.raises(SystemExit) as exit:
+        remove('.doty_rm1', force=False)
+    
+    assert exit.type == SystemExit
+    assert exit.value.code == 4
+
+    # Test normal functionality
+    monkeypatch.setattr('builtins.input', lambda _: 'y')
+    remove('.doty_rm1')
+    assert not os.path.isfile(temp_dir / 'dotfiles' / '.doty_rm1')
+    assert not os.path.islink(temp_dir / '.doty_rm1')
+    assert os.path.isfile(temp_dir / '.doty_rm1')
+
+    monkeypatch.setattr('builtins.input', lambda _: 'y')
+    remove('.doty_rm2')
+    assert not os.path.isfile(temp_dir / 'dotfiles' / 'nest1' / '.doty_rm2')
+    assert not os.path.islink(temp_dir / '.doty_rm2')
+    assert os.path.isfile(temp_dir / '.doty_rm2')
+    assert not os.path.isdir(temp_dir / 'dotfiles' / 'nest1')
+
+    remove('.doty_rm3', force=True)
+    assert not os.path.isfile(temp_dir / 'dotfiles' / '.doty_rm3')
+    assert not os.path.islink(temp_dir / '.doty_rm3')
+    assert os.path.isfile(temp_dir / '.doty_rm3')
+
+    assert os.path.islink(temp_dir / '.doty_rm4')
+    monkeypatch.setattr('builtins.input', lambda _: 'y')
+    remove('.doty_rm4', link_only=True)
+    assert os.path.isfile(temp_dir / 'dotfiles' / '.doty_rm4')
+    assert not os.path.islink(temp_dir / '.doty_rm4')
