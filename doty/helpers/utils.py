@@ -2,9 +2,19 @@ import os
 import shutil
 import yaml
 
+class DesinationExistsError(Exception):
+    """Raised when the destination path already exists."""
+    
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)
+
 def move_file(src, dst):
     """Move files from src to dst."""
     attempted = False
+
+    if os.path.exists(dst):
+        raise DesinationExistsError(f'{dst} already exists.')
 
     while True:
         try:
@@ -19,6 +29,9 @@ def move_file(src, dst):
 
 def move_out(dst, src):
     """Move files out of dotfiles directory"""
+
+    if os.path.exists(src):
+        raise DesinationExistsError(f'{src} already exists.')
 
     # Move file
     shutil.move(dst, src)
