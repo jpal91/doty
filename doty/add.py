@@ -168,7 +168,7 @@ def add(entry_name: str = '', src: str = '', dst: str = '', link_name: str = '',
 
     # Second check that will show the full entry and ask user to confirm if the information is accurate
     # Skipped if force is True
-    if force or (not force and double_check(str(entry), 'Confirm Doty Entry')):
+    if force or (not force and double_check('\n' + str(entry), 'Confirm Doty Entry')):
         logger.info('##bgreen##Adding##end## ##bwhite##Dotfile Entry')
     else:
         logger.warning('##byellow##Aborting...')
@@ -181,7 +181,7 @@ def add(entry_name: str = '', src: str = '', dst: str = '', link_name: str = '',
     # Even if the user does not want to update the repo, update is still ran in case the user wants to link the file back
     if not no_git and os.environ['GIT_AUTO_COMMIT']:
         logger.info('##bgreen##Adding##end## ##bwhite##to git repo')
-        update(quiet=True)
+        update()
     else:
         logger.info('##byellow##Skipping git repo update')
         update(commit=False, quiet=True)

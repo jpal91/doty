@@ -21,12 +21,12 @@ class ShortReport:
     
     def __str__(self):
         string = f"""\
-            
+
             ##bgreen##Added##end## Files: {len(self.add_files)} Links: {len(self.add_links)}
             ##bred##Removed##end## Files: {len(self.rm_files)} Links: {len(self.rm_links)}
             ##bblue##Updated##end## Files: {len(self.up_files)} Links: {len(self.up_links)}
         """
-        return textwrap.dedent(string)
+        return self.get_full_report() + textwrap.dedent(string)
     
     @property
     def changes(self) -> bool:
@@ -54,6 +54,29 @@ class ShortReport:
     
     def gen_git_report(self) -> str:
         return f'Links (A{len(self.add_links)}|R{len(self.rm_links)}|U{len(self.up_links)}) | Files (A{len(self.add_files)}|R{len(self.rm_files)}|U{len(self.up_files)})'
+    
+    def get_full_report(self) -> str:
+        report = []
+
+        for a in self.add_files:
+            report.append(f'##bgreen##Added ##bwhite##File: {a}')
+        
+        for r in self.rm_files:
+            report.append(f'##bred##Removed ##bwhite##File: {r}')
+        
+        for u in self.up_files:
+            report.append(f'##bblue##Updated ##bwhite##File: {u}')
+        
+        for a in self.add_links:
+            report.append(f'##bgreen##Added ##bwhite##Link: {a}')
+        
+        for r in self.rm_links:
+            report.append(f'##bred##Removed ##bwhite##Link: {r}')
+        
+        for u in self.up_links:
+            report.append(f'##bblue##Updated ##bwhite##Link: {u}')
+
+        return '\n'.join(report) + '\n'
 
 
 # TODO: Add a diff report for the lock file

@@ -25,11 +25,11 @@ class DotyEntry:
 
     def __str__(self) -> str:
         string = f"""\
-        ##bblue##Name: ##bwhite##{self.name}
-        ##bblue##Source: ##bwhite##{self.src}
-        ##bblue##Destination: ##bwhite##{self.dst}
-        ##bblue##Linked: ##bwhite##{self.linked}
-        ##bblue##Link Name: ##bwhite##{self.link_name}
+        \033[1;34mName: \033[1;37m{self.name}
+        \033[1;34mSource: \033[1;37m{self.src}
+        \033[1;34mDestination: \033[1;37m{self.dst}
+        \033[1;34mLinked: \033[1;37m{self.linked}
+        \033[1;34mLink Name: \033[1;37m{self.link_name}
         
         """
         return textwrap.dedent(string)
@@ -85,3 +85,4 @@ if __name__ == '__main__':
     arr2 = [entry1]
 
     print([entry.name for entry in arr1 if entry in arr2])
+    print(entry2 in arr1)

@@ -93,7 +93,7 @@ def remove(name: str, link_only: bool = False, no_git: bool = False, force: bool
     write_lock_file(yml, lock_path)
     
     if not no_git and os.environ['GIT_AUTO_COMMIT']:
-        update(quiet=True)
+        update()
     else:
         update(commit=False, quiet=True)
 

@@ -71,7 +71,7 @@ def update(commit: bool = os.getenv('GIT_AUTO_COMMIT', True), quiet: bool = Fals
 
     if dry_run:
         quiet = False
-        logger.info('\n##byellow##Dry run, no changes will be made\n')
+        logger.info('\n##byellow##!!Dry run, no changes will be made!!')
 
     if quiet:
         logger.set_quiet()
