@@ -98,6 +98,14 @@ def test_update(temp_dir, git_repo, capfd):
     doty_lock_path = temp_dir / 'dotfiles' / '.doty_config' / 'doty_lock.yml'
     with open(doty_lock_path, 'a') as f:
         f.write('- .dot_file8')
+
+    last_commit_message = git_repo.head.peel().message
+    update(dry_run=True)
+    out = capfd.readouterr().err
+    assert 'Files: 1 Links: 1' in out
+    assert not 'Committing changes' in out
+    assert git_repo.head.peel().message == last_commit_message
+
     update()
     out = capfd.readouterr().err
     assert 'Files: 1 Links: 1' in out

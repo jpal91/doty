@@ -60,15 +60,17 @@ def handle_prior_lock_changes(
 
     for entry in lock_changes:
         logger.debug(f"Entry: {entry.name}")
+        directory = os.path.split(entry.src)[0]
+        link_path = os.path.join(directory, entry.link_name)
 
         if entry.linked:
             # Since the file could be symlinked under an alias using link_name, we need to
             #  unlink the file using the link_name
-            directory = os.path.split(entry.src)[0]
-            link_path = os.path.join(directory, entry.link_name)
+    
+            # link_path = os.path.join(directory, entry.link_name)
 
             if os.path.islink(link_path):
-                logger.debug(f"Unlinking {entry.link_name}")
+                logger.info(f"##bred##Unlinking ##bwhite##{entry.link_name}")
                 if not dry_run:
                     os.unlink(link_path)
 
@@ -83,13 +85,14 @@ def handle_prior_lock_changes(
             continue
 
         # Verify there is no file or symlink matching src path to prevent overwriting
-        if os.path.exists(entry.src) or os.path.islink(entry.src):
+        # Does not need to check on dry_run because no files/links will be changed
+        if not dry_run and (os.path.exists(entry.src) or os.path.islink(link_path)):
             logger.error(
                 f"##bred##Error##end## ##bwhite##Moving file {entry.name} to {entry.src} already exists. Skipping..."
             )
             continue
 
-        logger.debug(f"Moving {entry.dst} to {entry.src}")
+        logger.info(f"##bred##Removing ##bwhite##{entry.dst} to {entry.src}")
         # shutil.move(entry.dst, entry.src)
         if not dry_run:
             move_out(entry.dst, entry.src)
@@ -133,7 +136,7 @@ def handle_current_lock_changes(
 
         # Move the file to the dotfiles directory
         # Using special move function to create directories if needed
-        logger.debug(f"Moving {entry.src} to {entry.dst}")
+        logger.info(f"##bgreen##Moving ##bwhite##{entry.src} to {entry.dst}")
         if not dry_run:
             move_file(entry.src, entry.dst)
 
@@ -145,14 +148,15 @@ def handle_current_lock_changes(
             linked_name = os.path.join(os.path.split(entry.src)[0], entry.link_name)
 
             # Verify there is no file or symlink matching link_name path to prevent overwriting
-            if os.path.exists(linked_name) or os.path.islink(linked_name):
+            # Does not need to check on dry_run because no files/links will be changed
+            if not dry_run and (os.path.exists(linked_name) or os.path.islink(linked_name)):
                 logger.error(
                     f"##bred##Error##end## ##bwhite##File {entry.name} - {linked_name} already exists. Skipping..."
                 )
                 entry.linked = False
                 continue
 
-            logger.debug(f"Linking {entry.dst} to {linked_name}")
+            logger.info(f"##bgreen##Linking ##bwhite##{entry.dst} to {linked_name}")
             if not dry_run:
                 os.symlink(entry.dst, linked_name)
 

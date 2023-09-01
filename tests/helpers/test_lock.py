@@ -423,21 +423,33 @@ def test_compare_lock_yaml(temp_dir: Path, git_repo, lock_file, capfd):
     )
     assert os.path.exists(temp_dir / "dotfiles" / "bash" / ".bash_aliases.1")
 
+    make_commit(git_repo, "test commit2")
+
     # Level 3 - Test dry run
     with open(lock_file) as f:
         new_file = yaml.safe_load(f)
     
     (temp_dir / '.dry_run').touch()
+    new_file.pop()
     new_file.append({ 'name': '.dry_run', 'linked': True, 'link_name': '.dry_run' })
 
     with open(lock_file, 'w') as f:
         yaml.safe_dump(new_file, f, sort_keys=False)
     
     report = compare_lock_yaml(dry_run=True)
+    out = capfd.readouterr().err
     assert os.path.exists(temp_dir / '.dry_run')
     assert not os.path.islink(temp_dir / '.dry_run')
     assert not os.path.exists(temp_dir / 'dotfiles' / '.dry_run')
+    assert os.path.islink(temp_dir / '.bash_aliases')
+    assert os.readlink(temp_dir / ".bash_aliases") == str(
+        temp_dir / "dotfiles" / "bash" / ".bash_aliases.1"
+    )
+    assert os.path.exists(temp_dir / "dotfiles" / "bash" / ".bash_aliases.1")
     assert report.changes
+    assert 'Added##end## Files: 1 Links: 1' in str(report)
+    assert 'Removed##end## Files: 1 Links: 1' in str(report)
+    assert 'Error' not in out
 
     # Testing an edge case to make sure that the "linked" attribute is updated appropriately
     # with open(lock_file) as f:
