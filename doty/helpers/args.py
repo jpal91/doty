@@ -31,6 +31,7 @@ def main_args() -> ArgumentParser:
     parser_add.add_argument('-e', help='Entry name', type=str, default='', dest='entry_name')
     parser_add.add_argument('-s', help='Source file', type=str, default='', dest='src')
     parser_add.add_argument('-d', help='Destination of the file within the dotfiles directory ($HOME/dotfiles/ is already assumed!)', type=str, default='', dest='dst')
+    parser_add.add_argument('-l', help='Link name of the file in your home directory', type=str, default='', dest='link_name')
     parser_add.add_argument('-f', help='Force the creation of the entry. Will still ask if there is missing input and will still show errors.', action='store_true', dest='force', default=False)
     parser_add.add_argument('--no-git', help='Do not add the entry to the git repo', action='store_true', dest='no_git', default=False)
     parser_add.add_argument('--no-link', help='Do not link the entry to the home directory', action='store_true', dest='no_link', default=False)

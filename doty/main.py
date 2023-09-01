@@ -15,7 +15,7 @@ if __name__ == '__main__':
         update(commit=not args.no_commit, quiet=args.quiet, dry_run=args.dry_run)
     
     if args.command in ['add', 'a']:
-        add(args.entry_name, args.src, args.dst, force=args.force, no_git=args.no_git, no_link=args.no_link)
+        add(args.entry_name, args.src, args.dst, args.link_name, force=args.force, no_git=args.no_git, no_link=args.no_link)
     
     if args.command in ['remove', 'rm']:
         remove(args.name, link_only=args.link, no_git=args.no_git, force=args.force)

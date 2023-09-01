@@ -2,6 +2,7 @@ import os
 from update import update
 from classes.logger import DotyLogger
 from classes.entry import DotyEntry
+from helpers.utils import add_to_lock_file
 
 logger = DotyLogger()
 
@@ -153,7 +154,7 @@ def add(entry_name: str = '', src: str = '', dst: str = '', link_name: str = '',
     # This prevents accidental moving of important system files to the dotfiles directory
     if not src_path.startswith(os.environ['HOME']) and not double_check('Source path is \033[1;31mnot in your home directory\033[0m, \033[1;37mare you sure you want to continue?', 'Source Path'):
         logger.warning('##byellow##Aborting...')
-        exit(0)
+        exit(3)
     
     entry_dict = {
         'name': name,
@@ -171,7 +172,10 @@ def add(entry_name: str = '', src: str = '', dst: str = '', link_name: str = '',
         logger.info('##bgreen##Adding##end## ##bwhite##Dotfile Entry')
     else:
         logger.warning('##byellow##Aborting...')
-        exit(0)
+        exit(4)
+    
+    lock_path = os.path.join(os.environ['DOTFILES_PATH'], '.doty_config', 'doty_lock.yml')
+    add_to_lock_file(entry_dict, lock_path)
 
     # Updates git repo or not depending on no_git flag
     # Even if the user does not want to update the repo, update is still ran in case the user wants to link the file back
@@ -181,3 +185,5 @@ def add(entry_name: str = '', src: str = '', dst: str = '', link_name: str = '',
     else:
         logger.info('##byellow##Skipping git repo update')
         update(commit=False, quiet=True)
+    
+    return entry_dict
