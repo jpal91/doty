@@ -74,6 +74,8 @@ def update(commit: bool = os.getenv('GIT_AUTO_COMMIT', True), quiet: bool = Fals
 
     if quiet:
         logger.set_quiet()
+    else:
+        logger.set_info()
 
     logger.info('\n##bblue##Discovering changes and updating Dotfiles Repo\n')
 

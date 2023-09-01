@@ -5,7 +5,7 @@ from doty.update import link_new_files, unlink_files, commit_changes, update
 
 @pytest.fixture(scope='module', autouse=True)
 def setup(temp_dir, dummy_files):
-    os.environ.update({'HOME': str(temp_dir)})
+    os.environ.update({'HOME': str(temp_dir), 'DOTFILES_PATH': str(temp_dir / 'dotfiles'), 'GIT_AUTO_COMMIT': 'false'})
     # logger = DotyLogger()
     # monkeypatch.setenv('HOME', str(temp_dir))
     # monkeypatch.setenv('DOTFILES_PATH', str(temp_dir / 'dotfiles'))
@@ -48,7 +48,7 @@ def test_commit_changes(temp_dir, git_repo):
     os.unlink(str(temp_dir / 'dot_file4'))
     (temp_dir / '.dot_file3').symlink_to(temp_dir / 'dotfiles' / 'dot_dir' / '.dot_file3')
 
-@pytest.mark.skip(reason='deprecating')
+
 def _test_update(temp_dir, git_repo):
     assert not os.path.islink(str(temp_dir / 'dot_file4'))
     update()
@@ -66,7 +66,7 @@ def _test_update(temp_dir, git_repo):
     assert git_repo.head.peel().message == 'Links(A1|R1) | Files(A2|R0|M0)'
     (temp_dir / '.dot_file2').symlink_to(temp_dir / 'dotfiles' / '.dot_file2')
 
-@pytest.mark.skip(reason='deprecating')
+
 def _test_update_flags(temp_dir, git_repo):
     assert git_repo.head.peel().message == 'Links(A1|R1) | Files(A2|R0|M0)'
     (temp_dir / 'dotfiles' / '.dot_file9').touch()
@@ -84,3 +84,23 @@ def _test_update_flags(temp_dir, git_repo):
     assert git_repo.status() == {'.dot_file9': 128, '.dot_file10': 128, '.doty_config/.dotyignore': 256}
     assert not os.path.islink(str(temp_dir / '.dot_file10'))
     assert os.path.islink(str(temp_dir / '.dot_file9'))
+
+def test_update(temp_dir, git_repo, capfd):
+    update()
+    out = capfd.readouterr().err
+    assert 'No changes detected' in out
+    assert not 'Committing changes' in out
+
+    update(quiet=True)
+    out = capfd.readouterr().err
+    assert out == ''
+
+    (temp_dir / '.dot_file8').touch()
+    doty_lock_path = temp_dir / 'dotfiles' / '.doty_config' / 'doty_lock.yml'
+    with open(doty_lock_path, 'a') as f:
+        f.write('- .dot_file8')
+    update()
+    out = capfd.readouterr().err
+    assert 'Files: 1 Links: 1' in out
+    assert 'Committing changes' in out
+    assert git_repo.head.peel().message == 'Links (A1|R0|U0) | Files (A1|R0|U0)'

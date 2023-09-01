@@ -53,7 +53,7 @@ class ShortReport:
         self.rm_links.append(name)
     
     def gen_git_report(self) -> str:
-        return f'Links (A{len(self.add_links)}|R{len(self.rm_links)}|U{len(self.up_links)}) Files (A{len(self.add_files)}|R{len(self.rm_files)}|U{len(self.up_files)})'
+        return f'Links (A{len(self.add_links)}|R{len(self.rm_links)}|U{len(self.up_links)}) | Files (A{len(self.add_files)}|R{len(self.rm_files)}|U{len(self.up_files)})'
 
 
 # TODO: Add a diff report for the lock file
