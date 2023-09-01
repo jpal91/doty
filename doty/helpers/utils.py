@@ -60,8 +60,14 @@ def write_lock_file(entries: list[dict], path: str) -> None:
         if entries:
             yaml.safe_dump(entries, f, sort_keys=False)
 
-def add_to_lock_file(entry: dict, path: str) -> None:
+def add_to_lock_file(entry: dict, path: str) -> bool:
     """Adds an entry to the doty_lock.yml file."""
     lock_file = load_lock_file(path)
+    entry_names = [e['name'] for e in lock_file]
+
+    if entry_names and entry['name'] in entry_names:
+        return False
+    
     lock_file.append(entry)
     write_lock_file(lock_file, path)
+    return True

@@ -7,9 +7,14 @@ from doty.add import get_user_input, double_check, get_name, get_dst, get_src, a
 @pytest.fixture(scope="module", autouse=True)
 def setup(temp_dir, dummy_files, git_repo):
     os.environ.update({"HOME": str(temp_dir), "DOTFILES_PATH": str(temp_dir / "dotfiles"), 'GIT_AUTO_COMMIT': 'false' })
-    yield
+    
     with open(temp_dir / 'dotfiles' / '.doty_config' / 'doty_lock.yml', 'w') as f:
         f.write('')
+    
+    yield
+    
+    # with open(temp_dir / 'dotfiles' / '.doty_config' / 'doty_lock.yml', 'w') as f:
+    #     f.write('')
 
 
 @pytest.mark.parametrize("input", ["test", "test2", "test3", ""])
@@ -108,16 +113,19 @@ def test_get_dst(temp_dir: Path, monkeypatch):
         ({ 'entry_name': '.good_entry1', 'src': '/usr/bin/zshrc', 'dst': 'dotfiles/.good_entry1', 'link_name': '.good_entry1', }, 'NO_HOME'),
         ({ 'entry_name': '.good_entry1', 'src': '.good_entry1', 'dst': 'dotfiles/.good_entry1', 'link_name': '.good_entry1' }, 'NO_CONFIRM'),
         ({ 'entry_name': '.good_entry1', 'src': '.entry_no_exist', 'dst': 'dotfiles/.good_entry1', 'link_name': '.good_entry1', 'force': True }, 'BAD_SRC'),
-        ({ 'entry_name': '.good_entry1', 'src': '.good_entry1', 'dst': '~/.config/.good_entry1', 'link_name': '.good_entry1', 'force': True }, 'BAD_DST'),
+        ({ 'entry_name': '.good_entry2', 'src': '.good_entry2', 'dst': '~/.config/.good_entry2', 'link_name': '.good_entry2', 'force': True }, 'BAD_DST'),
+        ({ 'entry_name': '.good_entry1', 'src': '.good_entry1', 'dst': 'dotfiles/.good_entry1', 'link_name': '.good_entry1' }, 'DUP_ENTRY'),
     ]
 )
 def test_add(temp_dir, monkeypatch, keyargs, expected, capfd):
     os.chdir(temp_dir)
+    # with open(temp_dir / 'dotfiles' / '.doty_config' / 'doty_lock.yml', 'w') as f:
+    #     f.write('')
 
     # Tests multiple kwargs to add which will result in a entry being succesfully added
     if expected == 'COMPLETE':
         monkeypatch.setattr('doty.add.update', lambda **_: None)
-        monkeypatch.setattr('doty.add.add_to_lock_file', lambda *_: None)
+        monkeypatch.setattr('doty.add.add_to_lock_file', lambda *_: True)
         monkeypatch.setattr('doty.add.double_check', lambda *_: True)
         name, src, dst, link_name = '.good_entry1', str(temp_dir / '.good_entry1'), str(temp_dir / 'dotfiles' / '.good_entry1'), '.good_entry1'
         linked = not keyargs['no_link'] if 'no_link' in keyargs else True
@@ -168,6 +176,7 @@ def test_add(temp_dir, monkeypatch, keyargs, expected, capfd):
     
     # Tests that error is thrown with a bad src path
     elif expected == 'BAD_SRC':
+
         add(**keyargs)
         err = capfd.readouterr().err
         assert 'Error' in err
@@ -176,8 +185,17 @@ def test_add(temp_dir, monkeypatch, keyargs, expected, capfd):
     
     # Tests that error is thrown with a bad dst path
     elif expected == 'BAD_DST':
+
         add(**keyargs)
         err = capfd.readouterr().err
         assert 'Error' in err
         assert 'not in the dotfiles directory' in err
-        assert not os.path.exists(temp_dir / 'dotfiles' / '.good_entry1')
+        assert not os.path.exists(temp_dir / 'dotfiles' / '.good_entry2')
+    
+    # Tests that error is thrown with a duplicate entry name
+    elif expected == 'DUP_ENTRY':
+        with pytest.raises(SystemExit) as exit:
+            add(**keyargs, force=True)
+        
+        assert exit.type == SystemExit
+        assert exit.value.code == 5

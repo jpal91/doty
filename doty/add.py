@@ -175,7 +175,11 @@ def add(entry_name: str = '', src: str = '', dst: str = '', link_name: str = '',
         exit(4)
     
     lock_path = os.path.join(os.environ['DOTFILES_PATH'], '.doty_config', 'doty_lock.yml')
-    add_to_lock_file(entry_dict, lock_path)
+    added = add_to_lock_file(entry_dict, lock_path)
+
+    if not added:
+        logger.warning('##byellow##Entry already exists in doty_lock.yml, aborting...')
+        exit(5)
 
     # Updates git repo or not depending on no_git flag
     # Even if the user does not want to update the repo, update is still ran in case the user wants to link the file back
