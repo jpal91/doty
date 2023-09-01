@@ -70,7 +70,7 @@ def handle_prior_lock_changes(
             # link_path = os.path.join(directory, entry.link_name)
 
             if os.path.islink(link_path):
-                logger.info(f"##bred##Unlinking ##bwhite##{entry.link_name}")
+                logger.debug(f"Unlinking {entry.link_name}")
                 if not dry_run:
                     os.unlink(link_path)
 
@@ -91,7 +91,7 @@ def handle_prior_lock_changes(
             )
             continue
 
-        logger.info(f"##bred##Removing ##bwhite##{entry.dst} to {entry.src}")
+        logger.debug(f"Removing {entry.dst} to {entry.src}")
         # shutil.move(entry.dst, entry.src)
         if not dry_run:
             move_out(entry.dst, entry.src)
@@ -134,7 +134,7 @@ def handle_current_lock_changes(
 
         # Move the file to the dotfiles directory
         # Using special move function to create directories if needed
-        logger.info(f"##bgreen##Moving ##bwhite##{entry.src} to {entry.dst}")
+        logger.debug(f"Moving{entry.src} to {entry.dst}")
         if not dry_run:
             move_file(entry.src, entry.dst)
 
@@ -153,7 +153,7 @@ def handle_current_lock_changes(
                 entry.linked = False
                 continue
 
-            logger.info(f"##bgreen##Linking ##bwhite##{entry.dst} to {linked_name}")
+            logger.debug(f"Linking {entry.dst} to {linked_name}")
             if not dry_run:
                 os.symlink(entry.dst, linked_name)
 

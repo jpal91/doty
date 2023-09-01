@@ -78,7 +78,7 @@ def remove(name: str, link_only: bool = False, no_git: bool = False, force: bool
     matched_dotfile = yml[idx]
     
     if not force:
-        confirm = input(f'\n\033[1;33mAre you sure you want to remove {"link" if link_only else ""}\033[0m \033[1;37m{matched_dotfile["name"]}\033[1;33m? (y/N)\033[0m ')
+        confirm = input(f'\n\033[1;33mAre you sure you want to remove{" link" if link_only else ""}\033[0m \033[1;37m{matched_dotfile["name"]}\033[1;33m from the dotfiles dir? (y/N)\033[0m ')
 
         if confirm.lower() != 'y':
             logger.info('##byellow##Aborting')
