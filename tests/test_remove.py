@@ -106,7 +106,8 @@ def test_remove(temp_dir: Path, monkeypatch):
         (temp_dir / '.doty_rm1'),
         (temp_dir / '.doty_rm2'),
         (temp_dir / '.doty_rm3'),
-        (temp_dir / '.doty_rm4')
+        (temp_dir / '.doty_rm4'),
+        (temp_dir / '.doty_rm5')
     ]
     [file.touch() for file in files]
     doty_lock_path = temp_dir / 'dotfiles' / '.doty_config' / 'doty_lock.yml'
@@ -114,6 +115,7 @@ def test_remove(temp_dir: Path, monkeypatch):
     entries = [DotyEntry({ 'name': os.path.basename(file) }) for file in files]
     entries[1].dst = str(temp_dir / 'dotfiles' / 'nest1' / '.doty_rm2')
     entries[2].linked = False
+    entries[4].link_name = '.doty_rm5_unique'
     write_lock_file([e.dict for e in entries], doty_lock_path)
     update(quiet=True)
 
@@ -139,6 +141,7 @@ def test_remove(temp_dir: Path, monkeypatch):
     assert not os.path.islink(temp_dir / '.doty_rm1')
     assert os.path.isfile(temp_dir / '.doty_rm1')
 
+    # Correctly removes nested entry + empty dirs
     monkeypatch.setattr('builtins.input', lambda _: 'y')
     remove('.doty_rm2')
     assert not os.path.isfile(temp_dir / 'dotfiles' / 'nest1' / '.doty_rm2')
@@ -146,13 +149,24 @@ def test_remove(temp_dir: Path, monkeypatch):
     assert os.path.isfile(temp_dir / '.doty_rm2')
     assert not os.path.isdir(temp_dir / 'dotfiles' / 'nest1')
 
+    # Correctly removes non-linked entry and doesn't confirm
     remove('.doty_rm3', force=True)
     assert not os.path.isfile(temp_dir / 'dotfiles' / '.doty_rm3')
     assert not os.path.islink(temp_dir / '.doty_rm3')
     assert os.path.isfile(temp_dir / '.doty_rm3')
 
+    # Correctly removes only the link but keeps file
     assert os.path.islink(temp_dir / '.doty_rm4')
     monkeypatch.setattr('builtins.input', lambda _: 'y')
     remove('.doty_rm4', link_only=True)
     assert os.path.isfile(temp_dir / 'dotfiles' / '.doty_rm4')
     assert not os.path.islink(temp_dir / '.doty_rm4')
+
+    # Correctly removes file that has a unique link name different from entry name
+    assert os.path.islink(temp_dir / '.doty_rm5_unique')
+    assert os.path.exists(temp_dir / 'dotfiles' / '.doty_rm5')
+    monkeypatch.setattr('builtins.input', lambda _: 'y')
+    remove('.doty_rm5_unique')
+    assert not os.path.islink(temp_dir / '.doty_rm5_unique')
+    assert not os.path.exists(temp_dir / 'dotfiles' / '.doty_rm5')
+    assert os.path.isfile(temp_dir / '.doty_rm5')

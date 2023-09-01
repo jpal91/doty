@@ -70,7 +70,7 @@ def remove(name: str, link_only: bool = False, no_git: bool = False, force: bool
     yml = load_lock_file(lock_path)
 
     try:
-        idx = yml.index([entry for entry in yml if entry['name'] == name][0])
+        idx = yml.index([entry for entry in yml if entry['name'] == name or entry['link_name'] == name][0])
     except (IndexError, ValueError):
         logger.error(f'\n##byellow##Could not find dotfile {name}')
         exit(3)
