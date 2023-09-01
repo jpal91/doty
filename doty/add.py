@@ -180,10 +180,8 @@ def add(entry_name: str = '', src: str = '', dst: str = '', link_name: str = '',
     # Updates git repo or not depending on no_git flag
     # Even if the user does not want to update the repo, update is still ran in case the user wants to link the file back
     if not no_git and os.environ['GIT_AUTO_COMMIT']:
-        logger.info('##bgreen##Adding##end## ##bwhite##to git repo')
         update()
     else:
-        logger.info('##byellow##Skipping git repo update')
-        update(commit=False, quiet=True)
+        update(commit=False)
     
     return entry_dict

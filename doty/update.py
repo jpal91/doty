@@ -92,3 +92,5 @@ def update(commit: bool = os.getenv('GIT_AUTO_COMMIT', True), quiet: bool = Fals
         repo = get_repo()
         git_report = report.gen_git_report()
         make_commit(repo, git_report)
+    else:
+        logger.info('##byellow##Skipping git repo update')

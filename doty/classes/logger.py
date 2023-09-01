@@ -1,6 +1,7 @@
 import os
 import re
 import logging
+from logging.handlers import RotatingFileHandler
 
 DOTY_FILE_LOGGING = os.getenv('DOTY_FILE_LOGGING', True)
 DOTY_LOG_PATH = os.getenv('DOTY_LOG_PATH', '')
@@ -116,7 +117,8 @@ class DotyLogger(logging.getLoggerClass()):
         self.addFilter(self.log_filter)
 
         if file_logging and DOTY_LOG_PATH:
-            self.file_handler = logging.FileHandler(DOTY_LOG_PATH)
+            # self.file_handler = logging.FileHandler(DOTY_LOG_PATH)
+            self.file_handler = RotatingFileHandler(DOTY_LOG_PATH, maxBytes=1024 * 1024 * 5, backupCount=5)
             self.file_handler.setLevel(logging.DEBUG)
             self.addHandler(self.file_handler)
 
