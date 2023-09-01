@@ -42,4 +42,7 @@ def main_args() -> ArgumentParser:
     parser_remove.add_argument('-f', help='Force the removal of the entry. Will still ask if there is missing input and will still show errors.', action='store_true', dest='force', default=False)
     parser_remove.add_argument('--no-git', help='Do not commit changes to the git repo', action='store_true', dest='no_git', default=False)
 
+    parser_edit = subparser.add_parser('edit', help='Edit a doty entry or the doty_lock file', aliases=['e'])
+    parser_edit.add_argument('-l', '--lock', help='Edit the doty_lock file', action='store_true', dest='lock', default=False)
+
     return parser
