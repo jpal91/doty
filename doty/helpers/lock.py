@@ -74,7 +74,7 @@ def handle_prior_lock_changes(
                 if not dry_run:
                     os.unlink(link_path)
 
-                report.rm_link(entry.link_name)
+                report.rm_link(entry.link_name, entry)
 
         # Verify the file exists in the dotfiles directory
         if not os.path.exists(entry.dst):
@@ -96,7 +96,7 @@ def handle_prior_lock_changes(
         if not dry_run:
             move_out(entry.dst, entry.src)
 
-        report.rm_file(entry.name)
+        report.rm_file(entry.name, entry)
 
 
 def handle_current_lock_changes(
@@ -138,7 +138,7 @@ def handle_current_lock_changes(
         if not dry_run:
             move_file(entry.src, entry.dst)
 
-        report.add_file(entry.name)
+        report.add_file(entry.name, entry)
 
         # Handle linking
         if entry.linked:
@@ -157,7 +157,7 @@ def handle_current_lock_changes(
             if not dry_run:
                 os.symlink(entry.dst, linked_name)
 
-            report.add_link(entry.link_name)
+            report.add_link(entry.link_name, entry)
 
 
 def compare_lock_yaml(dry_run: bool = False) -> ShortReport:

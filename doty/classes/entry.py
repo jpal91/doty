@@ -45,6 +45,11 @@ class DotyEntry:
             'link_name': self.link_name
         }
     
+    @property
+    def linked_path(self) -> str:
+        """Return the path of the linked file."""
+        return os.path.join(os.path.dirname(self.src), self.link_name)
+    
     def extrapolate(self) -> None:
         """Fill in the missing values of the entry."""
 

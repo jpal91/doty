@@ -1,4 +1,6 @@
+from collections import defaultdict
 import textwrap
+from classes.entry import DotyEntry
 # class CustomList:
 
 #     def __init__(self) -> None:
@@ -13,7 +15,153 @@ import textwrap
 #     def __contains__(self, other) -> bool:
 #         return other in self.__list
 
+class ReportItem:
+
+    def __init__(self) -> None:
+        self.entry_a = None
+        self.entry_b = None
+
+    def __iadd__(self, val: DotyEntry) -> None:
+        print(val)
+        if self.entry_b:
+            raise Exception('Cannot add more than two entries to a ReportItem')
+        self.entry_b = val
+        return self
+    
+    def __isub__(self, val: DotyEntry) -> None:
+        if self.entry_a:
+            raise Exception('Cannot remove more than two entries to a ReportItem')
+        self.entry_a = val
+        return self
+    
+    def add(self, val: DotyEntry) -> None:
+        self.entry_b = val
+    
+    def rm(self, val: DotyEntry) -> None:
+        self.entry_a = val
+    
+    @property
+    def is_update(self) -> bool:
+        return self.entry_a and self.entry_b
+    
+    @property
+    def is_add(self) -> bool:
+        return self.entry_b and not self.entry_a
+    
+    @property
+    def is_rm(self) -> bool:
+        return self.entry_a and not self.entry_b
+    
+    @property
+    def link_report(self) -> str:
+        if self.is_update:
+            if self.entry_a.linked and not self.entry_b.linked:
+                return f'##bred##Removed ##bwhite##link - {self.entry_a.linked_path}'
+            elif not self.entry_a.linked and self.entry_b.linked:
+                return f'##bgreen##Updated ##bwhite##link - {self.entry_b.name} - {self.entry_b.linked_path} -> {self.entry_b.dst}'
+            else:
+                return f'##bblue##Updated ##bwhite##link - {self.entry_b.name} - {self.entry_a.linked_path} -> {self.entry_b.dst}'
+        elif self.is_add:
+            return f'##bgreen##Added ##bwhite##link - {self.entry_b.name} - {self.entry_b.linked_path} -> {self.entry_b.dst}'
+        elif self.is_rm:
+            return f'##bred##Removed ##bwhite##link - {self.entry_a.name} - {self.entry_a.linked_path} -X> {self.entry_a.dst}'
+    
+    @property
+    def file_report(self) -> str:
+        if self.is_update:
+            if self.entry_a.dst != self.entry_b.dst:
+                return f'##bblue##Updated ##bwhite##dotfile path - {self.entry_b.name} - {self.entry_a.dst} -> {self.entry_b.dst}'
+            elif self.entry_a.link_name != self.entry_b.link_name:
+                return f'##bblue##Updated ##bwhite##dotfile link name - {self.entry_b.name} - {self.entry_a.link_name} -> {self.entry_b.link_name}'
+            # return f'##bblue##Updated ##bwhite##file - {self.entry_b.name}'
+            return ''
+        elif self.is_add:
+            return f'##bgreen##Added ##bwhite##file - {self.entry_b.name} - {self.entry_b.src} -> {self.entry_b.dst}'
+        elif self.is_rm:
+            return f'##bred##Removed ##bwhite##file - {self.entry_a.name} - {self.entry_a.src} <- {self.entry_a.dst}'
+
+
 class ShortReport:
+
+    def __init__(self) -> None:
+        self.files = defaultdict(ReportItem)
+        self.links = defaultdict(ReportItem)
+        self.links_count = None
+        self.files_count = None
+    
+    def __str__(self) -> str:
+        if not self.links_count or not self.files_count:
+            self.gen_git_report()
+        
+        string = f"""\
+
+            ##bgreen##Added##end## Files: {self.files_count[0]} Links: {self.links_count[0]}
+            ##bred##Removed##end## Files: {self.files_count[1]} Links: {self.links_count[1]}
+            ##bblue##Updated##end## Files: {self.files_count[2]} Links: {self.links_count[2]}
+        """
+        return self.get_full_report() + textwrap.dedent(string)
+
+    @property
+    def changes(self) -> bool:
+        return any([self.files, self.links])
+    
+    def add_file(self, name: str, entry: DotyEntry) -> None:
+        self.files[name].add(entry)
+    
+    def rm_file(self, name: str, entry: DotyEntry) -> None:
+        self.files[name].rm(entry)
+    
+    def add_link(self, name: str, entry: DotyEntry) -> None:
+        self.links[name].add(entry)
+    
+    def rm_link(self, name: str, entry: DotyEntry) -> None:
+        self.links[name].rm(entry)
+    
+    def gen_git_report(self) -> str:
+        al, rl, ul = 0, 0, 0
+        af, rf, uf = 0, 0, 0
+
+        for v in self.links.values():
+            if not v:
+                continue
+            
+            if v.is_add:
+                al += 1
+            elif v.is_rm:
+                rl += 1
+            elif v.is_update:
+                ul += 1
+        
+        for v in self.files.values():
+            if not v:
+                continue
+            
+            if v.is_add:
+                af += 1
+            elif v.is_rm:
+                rf += 1
+            elif v.is_update:
+                uf += 1
+        
+        self.links_count = (al, rl, ul)
+        self.files_count = (af, rf, uf)
+        
+        return f'Links (A{al}|R{rl}|U{ul}) | Files (A{af}|R{rf}|U{uf})'
+    
+    def get_full_report(self) -> str:
+        report = []
+
+        for v in self.links.values():
+            if v:
+                report.append(v.link_report)
+        
+        for v in self.files.values():
+            if v:
+                report.append(v.file_report)
+        
+        return '\n'.join(report) + '\n'
+
+class _ShortReport:
 
     def __init__(self) -> None:
         self.add_files, self.rm_files, self.up_files = [], [], []
@@ -82,3 +230,4 @@ class ShortReport:
 # TODO: Add a diff report for the lock file
 #       Possilbe ideas - difflib, git diff, git status
 #       difflib.SequenceMatcher(None, old, new), get_opcodes(), get_grouped_opcodes()
+
