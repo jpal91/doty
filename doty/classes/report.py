@@ -1,38 +1,18 @@
 from collections import defaultdict
 import textwrap
 from classes.entry import DotyEntry
-# class CustomList:
-
-#     def __init__(self) -> None:
-#         self.__list = []
-    
-#     def __iadd__(self, other) -> None:
-#         self.__list.append(other)
-
-#     def __isub__(self, other) -> None:
-#         self.__list.remove(other)
-    
-#     def __contains__(self, other) -> bool:
-#         return other in self.__list
 
 class ReportItem:
+    """A class representative of either 1 dotfile that would be added or removed
+        or 2 dotfiles, one to be added, and one to be removed (updated)
+
+        Based on the state of the ReportItem, it will return a string that can be used
+        to print a report to the user.
+    """
 
     def __init__(self) -> None:
         self.entry_a = None
         self.entry_b = None
-
-    def __iadd__(self, val: DotyEntry) -> None:
-        print(val)
-        if self.entry_b:
-            raise Exception('Cannot add more than two entries to a ReportItem')
-        self.entry_b = val
-        return self
-    
-    def __isub__(self, val: DotyEntry) -> None:
-        if self.entry_a:
-            raise Exception('Cannot remove more than two entries to a ReportItem')
-        self.entry_a = val
-        return self
     
     def add(self, val: DotyEntry) -> None:
         self.entry_b = val
@@ -42,15 +22,15 @@ class ReportItem:
     
     @property
     def is_update(self) -> bool:
-        return self.entry_a and self.entry_b
+        return self.entry_a is not None and self.entry_b is not None
     
     @property
     def is_add(self) -> bool:
-        return self.entry_b and not self.entry_a
+        return self.entry_b is not None and self.entry_a is None
     
     @property
     def is_rm(self) -> bool:
-        return self.entry_a and not self.entry_b
+        return self.entry_a is not None and self.entry_b is None
     
     @property
     def link_report(self) -> str:
@@ -73,7 +53,6 @@ class ReportItem:
                 return f'##bblue##Updated ##bwhite##dotfile path - {self.entry_b.name} - {self.entry_a.dst} -> {self.entry_b.dst}'
             elif self.entry_a.link_name != self.entry_b.link_name:
                 return f'##bblue##Updated ##bwhite##dotfile link name - {self.entry_b.name} - {self.entry_a.link_name} -> {self.entry_b.link_name}'
-            # return f'##bblue##Updated ##bwhite##file - {self.entry_b.name}'
             return ''
         elif self.is_add:
             return f'##bgreen##Added ##bwhite##file - {self.entry_b.name} - {self.entry_b.src} -> {self.entry_b.dst}'
@@ -82,6 +61,13 @@ class ReportItem:
 
 
 class ShortReport:
+    """The main report class which holds all instances of Dotfiles being
+        added, removed, or updated. It will collect information as the program
+        updates what should or should not be in the dotfiles directory.
+
+        Once the updating is complete, it uses the information it has collected
+        to generate a report for the user, meant to be printed to the terminal.
+    """
 
     def __init__(self) -> None:
         self.files = defaultdict(ReportItem)
