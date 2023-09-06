@@ -129,7 +129,7 @@ def remove_multi(names: list, link_only: bool = False, no_git: bool = False, for
 
     for entry in rm_entries:
         yml.remove(entry)
-        logger.info(f'##bred##Removed ##bwhite##{entry["name"]}')
+        logger.info(f'##bred##Removing ##bwhite##{entry["name"]}')
     
     write_lock_file(yml, lock_path)
     
