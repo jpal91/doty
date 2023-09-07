@@ -10,6 +10,7 @@ from doty.helpers.lock import (
     handle_prior_lock_changes,
     handle_current_lock_changes,
     compare_lock_yaml,
+    check_for_mismatch
 )
 from doty.classes.entry import DotyEntry
 from doty.classes.report import ShortReport
@@ -148,6 +149,23 @@ def test_get_lock_file_diff(temp_dir: Path, git_repo, lock_file):
 
     assert diff_prior == expected_diff_prior
     assert diff_current == expected_diff_current
+
+def test_check_for_mismatch(temp_dir: Path):
+    (temp_dir / 'dotfiles' / 'random2').touch()
+    (temp_dir / 'dotfiles' / 'random3').touch()
+    (temp_dir / 'random3').symlink_to(temp_dir / 'dotfiles' / 'random3')
+    (temp_dir / 'dotfiles' / 'random4').touch()
+    (temp_dir / 'random4').symlink_to(temp_dir / 'dotfiles' / 'random4')
+    diff_current = [DotyEntry({'name': '.bashrc'})]
+    current_entries = [
+        DotyEntry({'name': 'random1'}),
+        DotyEntry({'name': 'random2'}),
+        DotyEntry({'name': 'random3', 'linked': False}),
+        DotyEntry({'name': 'random4'})
+    ]
+    expected = [*diff_current, *current_entries[:3]]
+
+    assert check_for_mismatch(diff_current, current_entries) == expected
 
 
 def test_handle_prior_lock_changes(temp_dir: Path, capfd):
