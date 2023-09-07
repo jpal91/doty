@@ -90,6 +90,9 @@ class CustomFileLogFormatter(logging.Formatter):
             self.set_fmt = self.bred
         
         self.level = level
+
+        if level != 'DEBUG':
+            record.msg = record.msg.strip().replace('\n', ' ')
         
         formatter = logging.Formatter(self.fmt)
         return formatter.format(record)
