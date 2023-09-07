@@ -28,8 +28,12 @@ def parse_entries(entries: list[dict, str]) -> list[dict]:
 
 def get_lock_files(doty_lock_path: str) -> tuple[list[dict], list[dict]]:
     """Get the prior and current yaml file"""
-    prior_yaml = yaml.safe_load(last_commit_file(".doty_config/doty_lock.yml"))
-    current_yaml = load_lock_file(doty_lock_path)
+    try:
+        prior_yaml = yaml.safe_load(last_commit_file(".doty_config/doty_lock.yml"))
+        current_yaml = load_lock_file(doty_lock_path)
+    except yaml.YAMLError:
+        logger.critical('##bred##YAML file is invalid. Please check the file and try again.')
+        exit(1)
 
     # Parse new entries
     current_yaml = parse_entries(current_yaml)

@@ -177,7 +177,7 @@ class ShortReport2:
     def report(self) -> str:
         if not self.changes:
             return '##bgreen##No changes detected##end##\n'
-        return '\n'.join(self._report) + '\n' + '\n'.join(self._summary)
+        return '\n'.join(self._report) + '\n\n' + '\n'.join(self._summary) + '\n'
     
     @property
     def git_report(self) -> str:

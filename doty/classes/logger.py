@@ -47,6 +47,7 @@ class CustomFileLogFormatter(logging.Formatter):
     green = '\033[0;32m'
     byellow = '\033[1;33m'
     bred = '\033[1;31m'
+    blred = '\033[1;92m'
     bmagenta = '\033[1;35m'
     bgreen = '\033[1;32m'
     end = '\033[0m'
@@ -83,6 +84,10 @@ class CustomFileLogFormatter(logging.Formatter):
             self.set_fmt = self.bgreen
         elif level == 'WARNING':
             self.set_fmt = self.byellow
+        elif level == 'ERROR':
+            self.set_fmt = self.blred
+        elif level == 'CRITICAL':
+            self.set_fmt = self.bred
         
         self.level = level
         
