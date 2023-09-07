@@ -15,6 +15,10 @@ def setup(temp_dir, dummy_files, git_repo):
     os.symlink(temp_dir / "dotfiles" / ".doty_lfile1", temp_dir / ".doty_lfile1")
     os.symlink(temp_dir / "dotfiles" / ".doty_lfile2", temp_dir / ".doty_lfile2")
     os.symlink(temp_dir / "dotfiles" / 'dot_dir' / ".doty_lfile3", temp_dir / ".doty_lfile3")
+    yield
+
+    with open(temp_dir / 'dotfiles' / '.doty_config' / 'doty_lock.yml', 'w') as f:
+        f.write('')
 
 # @pytest.fixture(scope='module')
 # def temp_links(temp_dir, setup):

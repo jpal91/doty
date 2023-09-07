@@ -50,6 +50,31 @@ def get_lock_file_diff(
 
     return diff_current, diff_prior
 
+def check_for_mismatch(diff_current: list[DotyEntry], current_entries: list[DotyEntry]) -> list[DotyEntry]:
+    """Checks for entries that haven't changed from prior commit, but still may not be correct"""
+
+    for entry in current_entries:
+        if entry in diff_current:
+            continue
+
+        if not os.path.exists(entry.dst):
+            logger.warning(f'##bblue##Entry##end## ##bwhite##{entry.name}##bblue## not in correct dst - adding to queue')
+            diff_current.append(entry)
+            continue
+
+        link_path = os.path.join(os.environ['HOME'], entry.link_name)
+
+        if entry.linked and not os.path.islink(link_path):
+            logger.warning(f'##bblue##Entry##end## ##bwhite##{entry.name}##bblue## not linked - adding to queue')
+            diff_current.append(entry)
+            continue
+
+        if not entry.linked and os.path.islink(link_path):
+            logger.warning(f'##bblue##Entry##end## ##bwhite##{entry.name}##bblue## linked, but should not be - adding to queue')
+            diff_current.append(entry)
+            continue
+
+    return diff_current
 
 def handle_prior_lock_changes(
     lock_changes: list[DotyEntry], report: ShortReport, dry_run: bool = False
@@ -178,6 +203,9 @@ def compare_lock_yaml(dry_run: bool = False) -> ShortReport:
 
     # Get the difference between the current and prior yaml file
     diff_current, diff_prior = get_lock_file_diff(current_entries, prior_entries)
+
+    # Check for mismatched entries
+    diff_current = check_for_mismatch(diff_current, current_entries)
 
     # Handle any changes from prior locked entries
     handle_prior_lock_changes(diff_prior, report, dry_run=dry_run)

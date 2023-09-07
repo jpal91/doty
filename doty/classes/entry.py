@@ -68,6 +68,9 @@ class DotyEntry:
         if not self.dst:
             logger.debug(f'Adding dst for {self.name}')
             self.dst = os.path.join(os.environ['HOME'], 'dotfiles', self.name)
+        elif self.dst and not os.path.isabs(self.dst):
+            logger.debug(f'Adding dst for {self.name}')
+            self.dst = os.path.join(os.environ['HOME'], 'dotfiles', self.dst)
         
         if not self.link_name:
             logger.debug(f'Adding link_name for {self.name}')
