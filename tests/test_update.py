@@ -1,6 +1,7 @@
 import os
 import pytest
 from doty.update import link_new_files, unlink_files, commit_changes, update
+from doty.helpers.git import make_commit
 # from doty.classes.DotyLogger import DotyLogger
 
 @pytest.fixture(scope='module', autouse=True)
@@ -84,7 +85,11 @@ def _test_update_flags(temp_dir, git_repo):
     assert not os.path.islink(str(temp_dir / '.dot_file10'))
     assert os.path.islink(str(temp_dir / '.dot_file9'))
 
-def test_update(temp_dir, git_repo, capfd):
+def test_update(temp_dir, git_repo, capfd):    
+    # Run once with no assertions to reset
+    update()
+    capfd.readouterr().err
+    
     update()
     out = capfd.readouterr().err
     assert 'No changes detected' in out
@@ -102,12 +107,14 @@ def test_update(temp_dir, git_repo, capfd):
     last_commit_message = git_repo.head.peel().message
     update(dry_run=True)
     out = capfd.readouterr().err
-    assert 'Files: 1 Links: 1' in out
+    assert 'Added\x1b[0m Files: 1 Links: 1' in out
+    assert 'Modified\x1b[0m Files: 1' in out
     assert not 'Committing changes' in out
     assert git_repo.head.peel().message == last_commit_message
 
     update()
     out = capfd.readouterr().err
-    assert 'Files: 1 Links: 1' in out
+    assert 'Added\x1b[0m Files: 1 Links: 1' in out
+    assert 'Modified\x1b[0m Files: 1' in out
     assert 'Committing changes' in out
-    assert git_repo.head.peel().message == 'Links (A1|R0|U0) | Files (A1|R0|U0)'
+    assert git_repo.head.peel().message == 'Links (A1|R0|U0) | Files (A1|R0|U0|M1)'

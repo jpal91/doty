@@ -195,8 +195,8 @@ def test_remove_multi(temp_dir: Path, monkeypatch, capfd):
     monkeypatch.setattr('builtins.input', lambda _: next(inp))
     remove_multi(['.doty_rm6', '.doty_rm7', '.doty_rm8'])
     out = capfd.readouterr().err
-    assert 'Removed \x1b[1;37m.doty_rm6' in out
-    assert 'Removed \x1b[1;37m.doty_rm7' in out
+    assert 'Removing \x1b[1;37m.doty_rm6' in out
+    assert 'Removing \x1b[1;37m.doty_rm7' in out
     assert 'Skipping .doty_rm8' in out
     assert not os.path.islink(temp_dir / '.doty_rm6')
     assert not os.path.islink(temp_dir / '.doty_rm7')
@@ -211,8 +211,8 @@ def test_remove_multi(temp_dir: Path, monkeypatch, capfd):
     monkeypatch.setattr('builtins.input', lambda _: next(inp))
     remove_multi(['.doty_rm8', '.doty_rm9'], link_only=True)
     out = capfd.readouterr().err
-    assert 'Removed \x1b[1;37mlink for .doty_rm8' in out
-    assert 'Removed \x1b[1;37mlink for .doty_rm9' in out
+    assert 'Removing \x1b[1;37mlink for .doty_rm8' in out
+    assert 'Removing \x1b[1;37mlink for .doty_rm9' in out
     assert not os.path.islink(temp_dir / '.doty_rm8')
     assert not os.path.islink(temp_dir / '.doty_rm9')
     assert os.path.isfile(temp_dir / 'dotfiles' / '.doty_rm8')
@@ -223,4 +223,4 @@ def test_remove_multi(temp_dir: Path, monkeypatch, capfd):
     assert not os.path.islink(temp_dir / '.doty_rm10')
     assert os.path.isfile(temp_dir / '.doty_rm10')
     assert 'Could not find dotfile no_exist' in out
-    assert 'Removed \x1b[1;37m.doty_rm10' in out
+    assert 'Removing \x1b[1;37m.doty_rm10' in out

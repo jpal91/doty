@@ -72,7 +72,7 @@ def update(commit: bool = os.getenv('GIT_AUTO_COMMIT', True), quiet: bool = Fals
     if dry_run:
         quiet = False
         logger.info('\n##byellow##!!Dry run, no changes will be made!!')
-
+    
     if quiet:
         logger.set_quiet()
     else:
@@ -81,16 +81,13 @@ def update(commit: bool = os.getenv('GIT_AUTO_COMMIT', True), quiet: bool = Fals
     logger.info('\n##bblue##Discovering changes and updating Dotfiles Repo\n')
 
     report = compare_lock_yaml(dry_run=dry_run)
+    repo = get_repo()
+    report.gen_full_report(repo.status())
 
-    if report.changes:
-        logger.info(str(report))
-    else:
-        logger.info('##bgreen##No changes detected')
+    logger.info(str(report))
 
     if not dry_run and commit and report.changes:
         logger.info('##bwhite##Committing changes')
-        repo = get_repo()
-        git_report = report.gen_git_report()
-        make_commit(repo, git_report)
+        make_commit(repo, report.git_report)
     else:
         logger.info('##byellow##Skipping git repo update')

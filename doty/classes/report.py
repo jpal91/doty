@@ -147,6 +147,112 @@ class ShortReport:
         
         return '\n'.join(report) + '\n'
 
+class ShortReport2:
+    """The main report class which holds all instances of Dotfiles being
+        added, removed, or updated. It will collect information as the program
+        updates what should or should not be in the dotfiles directory.
+
+        Once the updating is complete, it uses the information it has collected
+        to generate a report for the user, meant to be printed to the terminal.
+    """
+
+    def __init__(self) -> None:
+        self.files = defaultdict(ReportItem)
+        self.links = defaultdict(ReportItem)
+        self.links_count = None
+        self.files_count = None
+        
+        self._report = []
+        self._summary = []
+        self._git_str = ''
+    
+    def __str__(self) -> str:
+        return self.report
+
+    @property
+    def changes(self) -> bool:
+        return len(self._report) > 0
+    
+    @property
+    def report(self) -> str:
+        if not self.changes:
+            return '##bgreen##No changes detected##end##\n'
+        return '\n'.join(self._report) + '\n' + '\n'.join(self._summary)
+    
+    @property
+    def git_report(self) -> str:
+        return self._git_str
+
+    def add_file(self, name: str, entry: DotyEntry) -> None:
+        self.files[name].add(entry)
+    
+    def rm_file(self, name: str, entry: DotyEntry) -> None:
+        self.files[name].rm(entry)
+    
+    def add_link(self, name: str, entry: DotyEntry) -> None:
+        self.links[name].add(entry)
+    
+    def rm_link(self, name: str, entry: DotyEntry) -> None:
+        self.links[name].rm(entry)
+    
+    def gen_git_report(self, modified: int) -> None:
+        al, rl, ul = 0, 0, 0
+        af, rf, uf = 0, 0, 0
+
+        for v in self.links.values():
+            if not v:
+                continue
+            
+            if v.is_add:
+                al += 1
+            elif v.is_rm:
+                rl += 1
+            elif v.is_update:
+                ul += 1
+        
+        for v in self.files.values():
+            if not v:
+                continue
+            
+            if v.is_add:
+                af += 1
+            elif v.is_rm:
+                rf += 1
+            elif v.is_update:
+                uf += 1
+        
+        self.links_count = (al, rl, ul)
+        self.files_count = (af, rf, uf)
+        self._git_str = f'Links (A{al}|R{rl}|U{ul}) | Files (A{af}|R{rf}|U{uf}|M{modified})'
+        self._summary = [
+            f'##bgreen##Added##end## Files: {af} Links: {al}',
+            f'##bred##Removed##end## Files: {rf} Links: {rl}',
+            f'##bblue##Updated##end## Files: {uf} Links: {ul}',
+            f'##byellow##Modified##end## Files: {modified}'
+        ]
+        
+        # return f'Links (A{al}|R{rl}|U{ul}) | Files (A{af}|R{rf}|U{uf})'
+    
+    def gen_full_report(self, git_status: dict) -> None:
+        modified = 0
+
+        for v in self.links.values():
+            if v:
+                self._report.append(v.link_report)
+        
+        for v in self.files.values():
+            if v:
+                self._report.append(v.file_report)
+        
+        for k, v in git_status.items():
+            if v and v & 256:
+                self._report.append(f'##byellow##Modified##end## ##bwhite##{k}')
+                modified += 1
+        
+        self.gen_git_report(modified)
+        
+        # return '\n'.join(report) + '\n'
+
 class _ShortReport:
 
     def __init__(self) -> None:

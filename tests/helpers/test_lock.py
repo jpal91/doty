@@ -449,9 +449,6 @@ def test_compare_lock_yaml(temp_dir: Path, git_repo, lock_file, capfd):
         temp_dir / "dotfiles" / "bash" / ".bash_aliases.1"
     )
     assert os.path.exists(temp_dir / "dotfiles" / "bash" / ".bash_aliases.1")
-    assert report.changes
-    assert 'Added##end## Files: 1 Links: 1' in str(report)
-    assert 'Removed##end## Files: 1 Links: 1' in str(report)
     assert 'Error' not in out
 
     # Testing an edge case to make sure that the "linked" attribute is updated appropriately

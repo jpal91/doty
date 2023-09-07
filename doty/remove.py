@@ -121,7 +121,7 @@ def remove_multi(names: list, link_only: bool = False, no_git: bool = False, for
         if link_only:
             entry['linked'] = False
             yml[i] = entry
-            logger.info(f'##bred##Removed ##bwhite##link for {entry["name"]}')
+            logger.info(f'##bred##Removing ##bwhite##link for {entry["name"]}')
         else:
             rm_entries.append(entry)
     

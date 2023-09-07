@@ -1,11 +1,10 @@
 import os
-import shutil
 import yaml
 from helpers.git import last_commit_file
 from helpers.utils import load_lock_file, write_lock_file, move_file, move_out
 from classes.entry import DotyEntry
 from classes.logger import DotyLogger
-from classes.report import ShortReport
+from classes.report import ShortReport2 as ShortReport
 
 logger = DotyLogger()
 
