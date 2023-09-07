@@ -1,7 +1,7 @@
 import os
+from pathlib import Path
 import pytest
 from doty.classes.entry import DotyEntry
-from pytest_lazyfixture import lazy_fixture as lazy
 
 @pytest.fixture(scope="module", autouse=True)
 def setup(temp_dir, dummy_files):
@@ -68,13 +68,55 @@ def tmp(temp_dir):
     [
         (
             {'nothing': 'nothing'},
-            {'name': '', 'src': '', 'dst': '', 'linked': False, 'link_name': ''}
+            {'name': '', 'src': '', 'dst': '', 'linked': True, 'link_name': ''}
         ),
         (
-            {'src': os.path.join(lazy('tmp'), '.bashrc')},
-            {'name': '.bashrc', 'src': os.path.join(lazy('tmp'), '.bashrc'), 'dst': os.path.join(lazy('tmp'), 'dotfiles', '.bashrc'), 'linked': True, 'link_name': '.bashrc'}
-        )   
+            {'src': 'temp_dir/.bashrc'},
+            {}
+        ),
+        (
+            {'name': '.bashrc'},
+            {}
+        ),
+        (
+            {'name': '.bashrc', 'src': 'temp_dir/bash/.bashrc'}, # Dual test, no dst, no default dir in src
+            {'src': 'temp_dir/bash/.bashrc'}
+        ),
+        (
+            {'name': '.bashrc', 'src': 'temp_dir/.bashrc', 'dst': 'bash/.bashrc'}, # dst present and not absolute
+            {'dst': 'temp_dir/dotfiles/bash/.bashrc'}
+        ),
+        (
+            {'name': '.bashrc', 'link_name': '.bashrc.1'}, # link_name present
+            {'link_name': '.bashrc.1'}
+        ),
+        (
+            {'name': '.bashrc', 'linked': False}, # linked present
+            {'linked': False}
+        )
     ]
 )
 def test_extrapolate(temp_dir, input, expected):
-    assert True
+    expected_dict = {
+        'name': '.bashrc',
+        'src': str(temp_dir / '.bashrc'),
+        'dst': str(temp_dir / 'dotfiles' / '.bashrc'),
+        'linked': True,
+        'link_name': '.bashrc'
+    }
+
+    if 'src' in input:
+        input['src'] = input['src'].replace('temp_dir', str(temp_dir))
+    elif 'dst' in input:
+        input['dst'] = input['dst'].replace('temp_dir', str(temp_dir))
+    
+    if 'src' in expected:
+        expected['src'] = expected['src'].replace('temp_dir', str(temp_dir))
+    elif 'dst' in expected:
+        expected['dst'] = expected['dst'].replace('temp_dir', str(temp_dir))
+    
+    expected = { **expected_dict, **expected }
+
+    entry = DotyEntry(input)
+
+    assert entry.dict == expected
