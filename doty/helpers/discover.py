@@ -1,4 +1,9 @@
 import os
+import yaml
+from classes.logger import DotyLogger
+from helpers.utils import load_lock_file
+
+logger = DotyLogger()
 
 def find_all_dotfiles() -> list:
     """Find all dotfiles in the user's dotfile directory."""
@@ -18,7 +23,7 @@ def find_all_dotfiles() -> list:
             dotfiles.append(os.path.join(root, file))
     return dotfiles
 
-def find_all_links(dotfiles: list) -> list:
+def _find_all_links(dotfiles: list) -> list:
     """Find all links in the user's home directory."""
     links = []
     for dotfile in dotfiles:
@@ -28,7 +33,7 @@ def find_all_links(dotfiles: list) -> list:
             links.append(home_path)
     return links
 
-def get_doty_ignore() -> list:
+def _get_doty_ignore() -> list:
     """Get the contents of .dotyignore"""
     doty_ignore = os.path.join(os.environ['HOME'], 'dotfiles', '.doty_config', '.dotyignore')
     if os.path.isfile(doty_ignore):
@@ -37,14 +42,32 @@ def get_doty_ignore() -> list:
             return items
     return []
 
-def discover() -> list:
+def _discover() -> list:
     """Find any files in the dotfiles directory which are not linked yet"""
-    doty_ignore = get_doty_ignore()
+    doty_ignore = _get_doty_ignore()
     dotfiles = find_all_dotfiles()
-    links = find_all_links(dotfiles)
+    links = _find_all_links(dotfiles)
     
     base_links = [os.path.basename(link) for link in links]
     new_link = [dotfile for dotfile in dotfiles if os.path.basename(dotfile) not in base_links and os.path.basename(dotfile) not in doty_ignore]
     unlink = [ignored for ignored in doty_ignore if ignored in base_links]
 
     return new_link, unlink
+
+
+
+def discover() -> list:
+    """Find any files in the dotfiles directory which are not linked yet"""
+    doty_lock_path = os.path.join(os.environ['DOTFILES_PATH'], '.doty_config', 'doty_lock.yml')
+    dotfiles = find_all_dotfiles()
+
+    try:
+        lock_entries = load_lock_file(doty_lock_path)
+    except yaml.YAMLError as e:
+        logger.critical('##bred##YAML file is invalid. Please check the file and try again.')
+        exit(1)
+
+    current_dsts = [entry['dst'] for entry in lock_entries]
+    new_dotfiles = [df for df in dotfiles if df not in current_dsts]
+
+    

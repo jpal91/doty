@@ -13,8 +13,8 @@ def setup(temp_dir, dummy_files, git_repo):
     
     yield
     
-    # with open(temp_dir / 'dotfiles' / '.doty_config' / 'doty_lock.yml', 'w') as f:
-    #     f.write('')
+    with open(temp_dir / 'dotfiles' / '.doty_config' / 'doty_lock.yml', 'w') as f:
+        f.write('')
 
 
 @pytest.mark.parametrize("input", ["test", "test2", "test3", ""])

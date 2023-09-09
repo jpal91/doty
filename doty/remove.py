@@ -2,7 +2,7 @@ import os
 import shutil
 from update import update
 from classes.logger import DotyLogger
-from helpers.discover import find_all_dotfiles, find_all_links
+from helpers.discover import find_all_dotfiles, _find_all_links
 from helpers.utils import load_lock_file, write_lock_file
 
 logger = DotyLogger()
@@ -28,7 +28,7 @@ def remove_file(dotfile: str) -> None:
 def _remove(name: str, link_only: bool = False, no_git: bool = False, force: bool = False) -> None:
     """Remove dotfiles from the repo"""
     dotfiles = find_all_dotfiles()
-    links = find_all_links(dotfiles)
+    links = _find_all_links(dotfiles)
     matched_dotfile = [dotfile for dotfile in dotfiles if name in os.path.basename(dotfile)]
     matched_link = [link for link in links if name in os.path.basename(link)]
 
