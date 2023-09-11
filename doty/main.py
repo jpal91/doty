@@ -4,6 +4,7 @@ from helpers.args import main_args
 from update import update
 from add import add
 from remove import remove, remove_multi
+from discover import discover
 
 def get_logs(num: int) -> None:
     """Show the git logs for the doty repo"""
@@ -45,3 +46,6 @@ if __name__ == '__main__':
             print('Doty file logging is not enabled. Please enable it in your dotyrc file.')
             exit(1)
         get_logs(args.num_logs)
+
+    if args.command in ['discover', 'd']:
+        discover()

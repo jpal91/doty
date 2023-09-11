@@ -50,4 +50,6 @@ def main_args() -> ArgumentParser:
     parser_logs = subparser.add_parser('logs', help='Show the git logs for the doty repo', aliases=['l'])
     parser_logs.add_argument('-n', help='Number of logs to show', type=int, default=20, dest='num_logs')
 
+    paser_discover = subparser.add_parser('discover', help='Discover all doty entries in the dotfiles directory', aliases=['d'])
+
     return parser

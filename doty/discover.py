@@ -2,8 +2,9 @@ import os
 import yaml
 from classes.logger import DotyLogger
 from classes.entry import DotyEntry
-from helpers.git import last_commit_file
+from helpers.git import last_commit_file, get_repo
 from helpers.utils import write_lock_file
+from helpers.lock import compare_lock_yaml
 
 logger = DotyLogger()
 
@@ -28,26 +29,24 @@ def find_all_dotfiles() -> list:
 def get_new_entries(all_dotfiles: list[str], lock_entries: list[dict]) -> list[dict]:
     """Get all new entries to be added to the lock file"""
     current_names = [entry['name'] for entry in lock_entries]
-    current_srcs = [entry['src'] for entry in lock_entries]
     current_dsts = [entry['dst'] for entry in lock_entries]
 
     new_entries = []
 
     for dotfile in all_dotfiles:
-        name = os.path.basename(dotfile)
-        src, dst = os.path.join(os.environ['HOME'], name), dotfile
-
-        if any([name in current_names, src in current_srcs, dst in current_dsts]):
+        if dotfile in current_dsts:
+            logger.debug(f'{dotfile} already in lock file. Skipping')
             continue
-        
-        entry = {
-            'name': name,
-            'src': src,
-            'dst': dst,
-            'linked': True,
-            'link_name': name
-        }
+
+        name = os.path.basename(dotfile)
+
+        if name in current_names:
+            logger.warning(f'##bwhite##{name} ##byellow##already in lock file. Please add manually with a different name...')
+            continue
+
+        entry = DotyEntry({ 'name': name, 'dst': dotfile }).dict
         new_entries.append(entry)
+        logger.debug(f'Adding entry {dotfile} to lock file')
     return new_entries
 
 def gen_temp_lock_file(entries: list[dict]) -> str:
@@ -69,3 +68,9 @@ def discover() -> None:
     logger.info(f'##bblue##Writing new temp lock file##end##')
     temp_lock_file = gen_temp_lock_file(new_lock_entries)
     logger.info(f'##bgreen##Wrote temp lock file to {temp_lock_file}##end##')
+
+    report = compare_lock_yaml(dry_run=True, doty_lock_path=temp_lock_file)
+    repo = get_repo()
+    report.gen_full_report(repo.status())
+
+    logger.info(str(report))
