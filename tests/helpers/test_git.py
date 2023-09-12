@@ -2,7 +2,7 @@ import os
 import subprocess
 import pytest
 from pygit2 import Repository, GIT_RESET_HARD
-from doty.helpers.git import get_repo, make_commit, parse_status, prior_commit_hex, last_commit_file
+from doty.helpers.git import get_repo, make_commit, parse_status, prior_commit_hex, last_commit_file, checkout
 
 @pytest.fixture(scope='module', autouse=True)
 def setup(temp_dir, dummy_files):
@@ -97,3 +97,47 @@ def test_last_commit_file(temp_dir, git_repo):
     
     # assert str(git_repo.head.target) == last_commit
     # assert last_commit_file('.doty_config/doty_lock.yml') == ""
+
+def test_checkout(temp_dir, git_repo: Repository):
+    repo = git_repo
+    last_commit = prior_commit_hex(repo)
+    assert repo.head.name == 'refs/heads/main'
+    assert str(repo.head.target) == last_commit
+    assert last_commit_file('.doty_config/doty_lock.yml') == ""
+
+    doty_lock_path = temp_dir / 'dotfiles' / '.doty_config' / 'doty_lock.yml'
+    with open(doty_lock_path, 'a') as f:
+        f.write('test')
+    
+    make_commit(repo, 'test commit')
+    new_commit = prior_commit_hex(repo)
+    assert str(repo.head.target) == new_commit
+    assert last_commit_file('.doty_config/doty_lock.yml') == "test"
+
+    res = checkout(repo, 'temp_branch')
+    assert res == True
+    assert repo.branches.local['temp_branch'].target == repo.head.target
+    assert repo.branches['temp_branch'].name == 'refs/heads/temp_branch'
+    assert str(repo.head.target) == new_commit
+    assert last_commit_file('.doty_config/doty_lock.yml') == "test"
+
+    with open(doty_lock_path, 'a') as f:
+        f.write('test2')
+
+    assert last_commit_file('.doty_config/doty_lock.yml') == "test"
+
+    checkout(repo, 'temp_branch', override=False)
+    assert str(repo.head.target) == new_commit
+    assert last_commit_file('.doty_config/doty_lock.yml') == "test"
+
+    make_commit(repo, 'test commit 2')
+    new_branch_commit = prior_commit_hex(repo)
+    assert str(repo.head.target) == new_branch_commit
+    assert last_commit_file('.doty_config/doty_lock.yml') == "testtest2"
+
+    res = checkout(repo, 'main')
+    assert res == True
+    assert repo.branches['main'].target == repo.head.target
+    assert repo.head.peel().message == 'test commit' 
+    assert str(repo.head.target) == new_commit
+    assert last_commit_file('.doty_config/doty_lock.yml') == "test"
