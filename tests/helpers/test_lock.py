@@ -23,11 +23,14 @@ def setup(temp_dir, dummy_files):
         {"HOME": str(temp_dir), "DOTFILES_PATH": str(temp_dir / "dotfiles")}
     )
 
+@pytest.fixture(scope='module')
+def last_commit(git_repo):
+    return git_repo.head.target
 
 @pytest.fixture
-def lock_file(temp_dir: Path, git_repo):
+def lock_file(temp_dir: Path, git_repo, last_commit):
     doty_lock_path = temp_dir / "dotfiles" / ".doty_config" / "doty_lock.yml"
-    current_commit = prior_commit_hex(git_repo)
+    # current_commit = prior_commit_hex(git_repo)
 
     with open(doty_lock_path, "w") as f:
         f.write(
@@ -43,11 +46,11 @@ def lock_file(temp_dir: Path, git_repo):
         )
     yield doty_lock_path
 
-    with open(doty_lock_path, "w") as f:
-        f.write("")
+    # with open(doty_lock_path, "w") as f:
+    #     f.write("")
 
-    if prior_commit_hex(git_repo) != current_commit:
-        git_repo.reset(current_commit, GIT_RESET_HARD)
+    if git_repo.head.target != last_commit:
+        git_repo.reset(last_commit, GIT_RESET_HARD)
 
 
 @pytest.mark.parametrize(
