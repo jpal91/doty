@@ -87,6 +87,24 @@ def check_for_mismatch(
 
     return diff_current
 
+def fix_links(current_entries: list[DotyEntry], report: ShortReport) -> ShortReport:
+    """Checks for entries that haven't changed from prior commit, but still may not be correct"""
+
+    for entry in current_entries:
+        link_path = os.path.join(os.environ["HOME"], entry.link_name)
+
+        if entry.linked and not os.path.exists(link_path):
+            os.symlink(entry.dst, link_path)
+            report.add_link(entry.link_name, entry)
+            continue
+
+        if not entry.linked and os.path.islink(link_path):
+            os.unlink(link_path)
+            report.rm_link(entry.link_name, entry)
+            continue
+
+    return report
+
 
 def handle_prior_lock_changes(
     lock_changes: list[DotyEntry], report: ShortReport, dry_run: bool = False
@@ -232,6 +250,10 @@ def compare_lock_yaml(
 
     # Handle any changes to the new lock file
     handle_current_lock_changes(diff_current, report, dry_run=dry_run)
+
+    # Fix any remaining broken symlinks
+    if not dry_run:
+        report = fix_links(current_entries, report)
 
     # Write current entries to lock file
     new_yaml = [entry.dict for entry in current_entries]

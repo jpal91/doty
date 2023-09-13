@@ -1,5 +1,5 @@
 import os
-from pygit2 import Repository, Signature
+from pygit2 import Repository, Signature, Commit, GIT_SORT_TIME, GIT_SORT_REVERSE
 
 class DirtyRepoError(Exception):
     pass
@@ -42,6 +42,23 @@ def prior_commit_hex(repo: Repository) -> str:
     head_commit = repo[repo.head.target]
     return head_commit.hex
 
+def find_last_commit(repo: Repository, file_path: str) -> Commit:
+    last_commit = None
+
+    for commit in repo.walk(repo.head.target, GIT_SORT_TIME | GIT_SORT_REVERSE):
+        diff = repo.diff(commit.parents[0], commit) if commit.parents else commit.tree.diff_to_tree()
+
+        for patch in diff:
+            print(commit.hex, commit.message, patch.delta.old_file.path, patch.delta.new_file.path)
+            if patch.delta.old_file.path == file_path or patch.delta.new_file.path == file_path:
+                last_commit = commit
+                break
+
+        if last_commit:
+            break
+
+    return last_commit
+
 def last_commit_file(file_name: str) -> str:
     repo = get_repo()
 
@@ -52,6 +69,21 @@ def last_commit_file(file_name: str) -> str:
     except KeyError:
         file = ''
 
+    return file
+
+def last_commit_file2(repo: Repository, file_name: str) -> str:
+    last_commit = find_last_commit(repo, file_name)
+
+    if not last_commit:
+        return ''
+
+    print('here')
+    try:
+        file = last_commit.tree[file_name].data.decode('utf-8')
+    except KeyError:
+        print('keyerror')
+        file = ''
+    
     return file
 
 def checkout(repo: Repository, branch_name: str, override: bool = False) -> bool:

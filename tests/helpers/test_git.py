@@ -2,11 +2,15 @@ import os
 import subprocess
 import pytest
 from pygit2 import Repository, GIT_RESET_HARD
-from doty.helpers.git import get_repo, make_commit, parse_status, prior_commit_hex, last_commit_file, checkout, DirtyRepoError
+from doty.helpers.git import get_repo, make_commit, parse_status, prior_commit_hex, last_commit_file, checkout, find_last_commit, last_commit_file2, DirtyRepoError
 
 @pytest.fixture(scope='module', autouse=True)
 def setup(temp_dir, dummy_files):
     os.environ.update({'HOME': str(temp_dir)})
+
+@pytest.fixture(scope='module')
+def first_commit(git_repo):
+    return git_repo.head.target
 
 def test_get_repo(setup, temp_dir, git_repo):
     repo = get_repo()
@@ -62,6 +66,49 @@ def test_prior_commit_hex(temp_dir, git_repo):
     assert repo.head.name == 'refs/heads/main'
     assert str(repo.head.target) == last_commit
     assert prior_commit_hex(repo) == last_commit
+
+@pytest.mark.skip()
+def test_find_last_commit(temp_dir, git_repo, first_commit, dummy_files):
+    # with open(temp_dir / 'dotfiles' / '.dot_file7', 'a') as f:
+    #     f.write('test')
+    # make_commit(git_repo, 'test commit 3')
+    with open(temp_dir / 'dotfiles' / '.dot_file7', 'a') as f:
+        f.write('test2')
+
+    make_commit(git_repo, 'test commit 4')
+    last_commit = git_repo.head.target
+
+    for i in range(5,9):
+        next_commit = make_commit(git_repo, f'test commit {i}')
+    
+    assert git_repo.head.target == next_commit
+    assert git_repo.head.peel().message == 'test commit 8'
+
+    for ref in git_repo.references['refs/heads/main'].log():
+        print(ref.oid_old, ref.oid_new, ref.message)
+    
+    last_change_commit = find_last_commit(git_repo, '.dot_file7')
+    assert last_change_commit.hex == last_commit.hex
+    assert last_change_commit.message == 'test commit 4'
+
+@pytest.mark.skip()
+def test_last_commit_file2(temp_dir, git_repo):
+    assert git_repo.head.peel().message == 'test commit 8'
+    # make_commit(git_repo, 'test commit 9')
+    assert last_commit_file2(git_repo, '.dot_file7') == 'test2'
+    
+    with open(temp_dir / 'dotfiles' / '.dot_file7', 'a') as f:
+        f.write('test3')
+    
+    make_commit(git_repo, 'test commit 9')
+    assert git_repo.head.peel().message == 'test commit 9'
+
+    with open(temp_dir / 'dotfiles' / '.dot_file7', 'a') as f:
+        f.write('test4')
+
+    assert last_commit_file2(git_repo, '.dot_file7') == 'test2test3'
+
+    assert last_commit_file2(git_repo, 'never_existed') == ''
 
 def test_last_commit_file(temp_dir, git_repo):
     def get_commit_file(commit: str) -> str:
