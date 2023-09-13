@@ -46,7 +46,7 @@ def get_new_entries(all_dotfiles: list[str], lock_entries: list[dict]) -> list[d
 
         entry = DotyEntry({ 'name': name, 'dst': dotfile }).dict
         new_entries.append(entry)
-        logger.debug(f'Adding entry {dotfile} to lock file')
+        logger.info(f'##bwhite##Adding entry ##bgreen##{dotfile} ##bwhite##to lock file')
     return new_entries
 
 def gen_temp_lock_file(entries: list[dict]) -> str:
@@ -74,8 +74,5 @@ def discover() -> None:
     write_lock_file(new_lock_entries, lock_file_path)
     make_commit(repo, 'Creating new lock file on discover')
 
-    report = compare_lock_yaml(dry_run=True)
-    report.gen_full_report(repo.status())
-
-    logger.info(str(report))
+    logger.info(f'##bgreen##Done!##end##')
 
