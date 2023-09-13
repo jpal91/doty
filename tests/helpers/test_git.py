@@ -98,7 +98,7 @@ def test_last_commit_file(temp_dir, git_repo):
     # assert str(git_repo.head.target) == last_commit
     # assert last_commit_file('.doty_config/doty_lock.yml') == ""
 
-def test_checkout(temp_dir, git_repo: Repository):
+def test_checkout_new_branch(temp_dir, git_repo: Repository):
     repo = git_repo
     last_commit = prior_commit_hex(repo)
     assert repo.head.name == 'refs/heads/main'
@@ -121,19 +121,27 @@ def test_checkout(temp_dir, git_repo: Repository):
     assert str(repo.head.target) == new_commit
     assert last_commit_file('.doty_config/doty_lock.yml') == "test"
 
+def test_checkout_with_branch_edits(temp_dir, git_repo: Repository):
+    repo = git_repo
+    doty_lock_path = temp_dir / 'dotfiles' / '.doty_config' / 'doty_lock.yml'
+    new_commit = prior_commit_hex(repo)
+
     with open(doty_lock_path, 'a') as f:
         f.write('test2')
 
     assert last_commit_file('.doty_config/doty_lock.yml') == "test"
 
-    checkout(repo, 'temp_branch', override=False)
+    checkout(repo, 'temp_branch')
     assert str(repo.head.target) == new_commit
     assert last_commit_file('.doty_config/doty_lock.yml') == "test"
+
+    (temp_dir / 'dotfiles' / 'checkout_test_file.txt').touch()
 
     make_commit(repo, 'test commit 2')
     new_branch_commit = prior_commit_hex(repo)
     assert str(repo.head.target) == new_branch_commit
     assert last_commit_file('.doty_config/doty_lock.yml') == "testtest2"
+    assert (temp_dir / 'dotfiles' / 'checkout_test_file.txt').exists()
 
     res = checkout(repo, 'main')
     assert res == True
@@ -141,3 +149,69 @@ def test_checkout(temp_dir, git_repo: Repository):
     assert repo.head.peel().message == 'test commit' 
     assert str(repo.head.target) == new_commit
     assert last_commit_file('.doty_config/doty_lock.yml') == "test"
+    assert not (temp_dir / 'dotfiles' / 'checkout_test_file.txt').exists()
+
+def test_checkout_with_override(temp_dir, git_repo: Repository):
+    repo = git_repo
+    doty_lock_path = temp_dir / 'dotfiles' / '.doty_config' / 'doty_lock.yml'
+    new_commit = prior_commit_hex(repo)
+
+    assert repo.branches['main'].target == repo.head.target
+    assert not (temp_dir / 'dotfiles' / 'checkout_test_file_1.txt').exists()
+
+    (temp_dir / 'dotfiles' / 'checkout_test_file_1.txt').touch()
+    with open(doty_lock_path, 'a') as f:
+        f.write('test3')
+
+    new_commit = make_commit(repo, 'test commit 3')
+    assert repo.head.peel().message == 'test commit 3' 
+    assert last_commit_file('.doty_config/doty_lock.yml') == "testtest3"
+
+    res = checkout(repo, 'temp_branch', override=True)
+    assert res is True
+    assert repo.branches.local['temp_branch'].target == repo.head.target
+    assert repo.branches['temp_branch'].name == 'refs/heads/temp_branch'
+    assert repo.head.peel().message == 'test commit 3' 
+    assert repo.head.target == new_commit
+    assert (temp_dir / 'dotfiles' / 'checkout_test_file_1.txt').exists()
+    assert not (temp_dir / 'dotfiles' / 'checkout_test_file.txt').exists()
+    assert last_commit_file('.doty_config/doty_lock.yml') == "testtest3"
+
+def test_checkout_with_error(temp_dir, git_repo: Repository):
+    repo = git_repo
+    doty_lock_path = temp_dir / 'dotfiles' / '.doty_config' / 'doty_lock.yml'
+    last_commit = prior_commit_hex(repo)
+
+    checkout(repo, 'main')
+    assert repo.status() == {}
+    assert repo.branches.local['main'].target == repo.head.target
+    assert str(repo.head.target) == last_commit
+    assert repo.head.peel().message == 'test commit 3' 
+    assert (temp_dir / 'dotfiles' / 'checkout_test_file_1.txt').exists()
+    with open(temp_dir / 'dotfiles' / 'checkout_test_file_1.txt') as f:
+        assert f.read() == ''
+    
+    checkout(repo, 'temp_branch')
+    assert repo.status() == {}
+    assert (temp_dir / 'dotfiles' / 'checkout_test_file_1.txt').exists()
+    assert repo.branches.local['temp_branch'].target == repo.head.target
+    assert repo.head.peel().message == 'test commit 3' 
+    new_commit = make_commit(repo, 'empty commit')
+    with open(temp_dir / 'dotfiles' / 'checkout_test_file_1.txt', 'a') as f:
+        f.write('test changes')
+    assert repo.status() != {}
+    assert repo.head.target == new_commit
+    assert repo.head.peel().message == 'empty commit' 
+
+    checkout(repo, 'main')
+    assert repo.branches.local['main'].target == repo.head.target
+    assert str(repo.head.target) == last_commit
+    assert repo.head.peel().message == 'test commit 3' 
+    # assert (temp_dir / 'dotfiles' / 'checkout_test_file_1.txt').exists()
+    with open(temp_dir / 'dotfiles' / 'checkout_test_file_1.txt') as f:
+        assert f.read() == 'test changes'
+
+    # with pytest.raises(Exception) as ex:
+    # checkout(repo, 'temp_branch')
+    # assert repo.branches.local['temp_branch'].target == repo.head.target
+    # assert (temp_dir / 'dotfiles' / 'checkout_test_file_2.txt').exists()

@@ -1,5 +1,5 @@
 import os
-from pygit2 import Repository, Signature, GIT_CHECKOUT_FORCE
+from pygit2 import Repository, Signature
 
 def get_repo() -> Repository:
     path = os.path.join(os.environ['HOME'], 'dotfiles', '.git')
@@ -51,21 +51,22 @@ def last_commit_file(file_name: str) -> str:
 
     return file
 
-def checkout(repo: Repository, branch: str, override: bool = True) -> bool:
-    branch = 'refs/heads/' + branch
-    checkout_branch = repo.branches.local.get(branch)
+def checkout(repo: Repository, branch_name: str, override: bool = False) -> bool:
+    checkout_branch = repo.branches.get(branch_name)
     last_commit = repo[prior_commit_hex(repo)]
+    # last_commit = repo[commit]
 
     if checkout_branch:
-        if override:
-            repo.branches.local.delete(branch)
-            new_branch = repo.branches.local.create(branch, last_commit)
+        if override and branch_name != 'main':
+            print('override')
+            repo.branches.delete(branch_name)
+            new_branch = repo.branches.local.create(branch_name, last_commit)
             repo.checkout(new_branch)
         else:
-            return False
-        
+            repo.checkout(checkout_branch)
     else:
-        new_branch = repo.branches.local.create(branch, last_commit)
+        print('no branch get')
+        new_branch = repo.branches.local.create(branch_name, last_commit)
         repo.checkout(new_branch)
 
     return True
