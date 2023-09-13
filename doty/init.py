@@ -44,6 +44,9 @@ def init(temp: bool = False) -> None:
         logger.info(f'##bgreen##Initializing##end## ##bwhite##{dotfiles_dir} as a git repo')
         repo = pygit2.init_repository(dotfiles_dir)
         new_repo = True
+        
+        if repo.head.shorthand == 'master':
+            repo.branches.local['master'].rename('main')
 
     # Create the .doty_config directory if it doesn't exist
     doty_config_dir = os.path.join(dotfiles_dir, '.doty_config')

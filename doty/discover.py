@@ -2,7 +2,7 @@ import os
 import yaml
 from classes.logger import DotyLogger
 from classes.entry import DotyEntry
-from helpers.git import last_commit_file, get_repo
+from helpers.git import last_commit_file, get_repo, checkout, make_commit
 from helpers.utils import write_lock_file
 from helpers.lock import compare_lock_yaml
 
@@ -57,6 +57,10 @@ def gen_temp_lock_file(entries: list[dict]) -> str:
 
 def discover() -> None:
     """Find any files in the dotfiles directory which are not linked yet"""
+    repo = get_repo()
+    logger.info(f'##bwhite##Checking out branch ##byellow##"doty_discover"##bwhite## from ##byellow##{repo.head.shorthand}##end##')
+    checkout(repo, 'doty_discover', override=True)
+
     logger.info('##bblue##Discovering new dotfiles in repo##end##')
     dotfiles = find_all_dotfiles()
     lock_entries = yaml.safe_load(last_commit_file(".doty_config/doty_lock.yml"))
@@ -66,11 +70,12 @@ def discover() -> None:
 
     logger.info(f'##bgreen##Found {len(new_entries)} new dotfiles##end##')
     logger.info(f'##bblue##Writing new temp lock file##end##')
-    temp_lock_file = gen_temp_lock_file(new_lock_entries)
-    logger.info(f'##bgreen##Wrote temp lock file to {temp_lock_file}##end##')
+    lock_file_path = os.path.join(os.environ['DOTFILES_PATH'], '.doty_config', 'doty_lock.yml')
+    write_lock_file(new_lock_entries, lock_file_path)
+    make_commit(repo, 'Creating new lock file on discover')
 
-    report = compare_lock_yaml(dry_run=True, doty_lock_path=temp_lock_file)
-    repo = get_repo()
+    report = compare_lock_yaml(dry_run=True)
     report.gen_full_report(repo.status())
 
     logger.info(str(report))
+

@@ -41,9 +41,11 @@ def git_repo(temp_dir):
     index.write()
     tree = index.write_tree()
     author_commiter = pygit2.Signature('doty', 'email@email.com')
-    repo.create_commit(ref, author_commiter, author_commiter, 'initial commit', tree, [])
+    first_commit = repo.create_commit(ref, author_commiter, author_commiter, 'initial commit', tree, [])
 
     yield repo
+    repo.checkout(repo.branches.get('main'))
+    repo.reset(first_commit, pygit2.GIT_RESET_HARD)
 
 @pytest.fixture(scope='module')
 def dummy_files(temp_dir):

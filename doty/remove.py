@@ -136,6 +136,6 @@ def remove_multi(names: list, link_only: bool = False, no_git: bool = False, for
     if not no_git and os.environ['GIT_AUTO_COMMIT']:
         update()
     else:
-        update(commit=False, quiet=True)
+        update(commit=False)
 
     logger.info(f'\n##bgreen##Done##end##')

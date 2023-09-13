@@ -3,7 +3,7 @@ import pytest
 import yaml
 from doty.discover import find_all_dotfiles, get_new_entries, gen_temp_lock_file, discover
 from doty.classes.entry import DotyEntry
-from doty.helpers.git import last_commit_file
+from doty.helpers.git import last_commit_file, make_commit
 
 @pytest.fixture(scope='module', autouse=True)
 def setup(temp_dir, dummy_files):
@@ -77,23 +77,28 @@ def test_gen_temp_lock_file(temp_dir, dummy_lock_file):
         assert entries != dummy_lock_file
         assert entries[-1]['name'] == '.dot_file7'
 
+# @pytest.mark.skip(reason="Need to figure out how to mock git repo")
 def test_discover(temp_dir, git_repo, dummy_lock_file):
     doty_lock_path = temp_dir / 'dotfiles' / '.doty_config' / 'doty_lock.yml'
     temp_lock_path = temp_dir / 'dotfiles' / '.doty_config' / 'doty_lock_tmp.yml'
+    last_git_commit = make_commit(git_repo, 'test commit')
+    
     last_commit = yaml.safe_load(last_commit_file(".doty_config/doty_lock.yml"))
     expected = [
         DotyEntry({'name': '.dot_file7'}).dict, 
         DotyEntry({'name': '.dot_file8', 'dst': str(temp_dir / 'dotfiles' / 'test' / '.dot_file8')}).dict
     ]
     assert len(last_commit) == 5
+    assert git_repo.head.shorthand == 'main'
     discover()
 
     with open(doty_lock_path) as f:
         current_lock = yaml.safe_load(f)
-    
-    assert current_lock == last_commit
 
-    with open(temp_lock_path) as f:
-        temp_lock = yaml.safe_load(f)
-    
-    assert temp_lock == [*last_commit, *expected]
+    new_last_commit = yaml.safe_load(last_commit_file(".doty_config/doty_lock.yml"))
+    assert current_lock == new_last_commit
+    assert current_lock != last_commit
+    assert current_lock == [*last_commit, *expected]
+    assert git_repo.head.shorthand == 'doty_discover'
+    assert git_repo.head.peel().message == 'Creating new lock file on discover'
+    assert last_git_commit != git_repo.head.target

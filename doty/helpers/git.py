@@ -1,6 +1,9 @@
 import os
 from pygit2 import Repository, Signature
 
+class DirtyRepoError(Exception):
+    pass
+
 def get_repo() -> Repository:
     path = os.path.join(os.environ['HOME'], 'dotfiles', '.git')
     return Repository(path)
@@ -54,18 +57,18 @@ def last_commit_file(file_name: str) -> str:
 def checkout(repo: Repository, branch_name: str, override: bool = False) -> bool:
     checkout_branch = repo.branches.get(branch_name)
     last_commit = repo[prior_commit_hex(repo)]
-    # last_commit = repo[commit]
+
+    if repo.status() and not override:
+        raise DirtyRepoError('Cannot checkout branch with dirty repo')
 
     if checkout_branch:
         if override and branch_name != 'main':
-            print('override')
             repo.branches.delete(branch_name)
             new_branch = repo.branches.local.create(branch_name, last_commit)
             repo.checkout(new_branch)
         else:
             repo.checkout(checkout_branch)
     else:
-        print('no branch get')
         new_branch = repo.branches.local.create(branch_name, last_commit)
         repo.checkout(new_branch)
 
