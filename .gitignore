@@ -8,3 +8,4 @@ dotyrc
 dep
 .pytest*
 ln-*
+pg

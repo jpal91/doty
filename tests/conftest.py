@@ -42,10 +42,15 @@ def git_repo(temp_dir):
     tree = index.write_tree()
     author_commiter = pygit2.Signature('doty', 'email@email.com')
     first_commit = repo.create_commit(ref, author_commiter, author_commiter, 'initial commit', tree, [])
+    # repo.branches.get('master').rename('main')
+    # print(list(repo.branches))
 
     yield repo
-    repo.checkout(repo.branches.get('main'))
-    repo.reset(first_commit, pygit2.GIT_RESET_HARD)
+    main_branch = repo.branches.get('main')
+    if main_branch:
+        repo.checkout(main_branch)
+        repo.reset(first_commit, pygit2.GIT_RESET_HARD)
+        print(repo.head.shorthand)
 
 @pytest.fixture(scope='module')
 def dummy_files(temp_dir):

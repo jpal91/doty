@@ -45,8 +45,6 @@ def init(temp: bool = False) -> None:
         repo = pygit2.init_repository(dotfiles_dir)
         new_repo = True
         
-        if repo.head.shorthand == 'master':
-            repo.branches.local['master'].rename('main')
 
     # Create the .doty_config directory if it doesn't exist
     doty_config_dir = os.path.join(dotfiles_dir, '.doty_config')
@@ -97,6 +95,9 @@ def init(temp: bool = False) -> None:
         tree = index.write_tree()
         author_commiter = pygit2.Signature('doty', 'doty@email.com')
         repo.create_commit('HEAD', author_commiter, author_commiter, 'Initialized Doty Repo', tree, [])
+
+        if repo.head.shorthand == 'master':
+            repo.branches.local['master'].rename('main')
     
     logger.info('##bgreen##Done##end##')
 
